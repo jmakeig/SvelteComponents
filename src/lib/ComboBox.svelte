@@ -76,6 +76,11 @@
 			}
 		};
 	}
+	function blur_on_idle(node) {
+		$effect(() => {
+			if (state.matches('idle')) node.blur();
+		});
+	}
 </script>
 
 <h1 style="font-family: monospace; margin: 0.5em 0;">{JSON.stringify(state?.value)}</h1>
@@ -109,8 +114,14 @@
 		onfocus={(evt) => actor.send({ type: 'activate' })}
 		oninput={(evt) => actor.send({ type: 'oninput', value: evt.target.value })}
 		onkeydown={handle_keydown_select}
+		use:blur_on_idle
 	/> <code>selection: {state.context.selection ?? 'null'} </code>
-	<ol id="proposals" role="listbox" aria-label="Items" hidden={!state.matches({active: 'proposing'})}>
+	<ol
+		id="proposals"
+		role="listbox"
+		aria-label="Items"
+		hidden={!state.matches({ active: 'proposing' })}
+	>
 		{#each state.context.matches as match, i}
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<li
@@ -125,9 +136,9 @@
 		{/each}
 	</ol>
 	<div role="status" aria-live="polite" aria-atomic="true">
-		{#if state.matches({active: "searching"})}
+		{#if state.matches({ active: 'searching' })}
 			Loading…
-		{:else if state.matches({active:'proposing'}) && 0 === state.context.matches.length}
+		{:else if state.matches({ active: 'proposing' }) && 0 === state.context.matches.length}
 			No results
 		{/if}
 	</div>
