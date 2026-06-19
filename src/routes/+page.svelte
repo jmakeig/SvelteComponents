@@ -4,4 +4,8 @@
 </script>
 
 <label for="color">Color</label>
-<ComboBox name="color" search={get_colors} render={() => {}} debug/>
+<ComboBox name="color" search={get_colors} debug>
+	{#snippet item(match)}
+		<strong>{match.label}</strong> — {match.value}
+	{/snippet}
+</ComboBox>

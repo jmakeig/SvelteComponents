@@ -1,6 +1,6 @@
 <!--
 	TODO:
-		* Implement render logic for list items and value.
+		✅ Implement render logic for list items and value.
 		* Add “Create XXX…” for new itemsl
 		✅ Refactor into proper Svelte component
 		✅ Refactor machine to inject actor and action implementations
@@ -11,7 +11,7 @@
 <script>
 	import { create_actor } from './machine.js';
 
-	let { name, search, debug = false } = $props();
+	let { name, search, debug = false, item } = $props();
 
 	// svelte-ignore state_referenced_locally
 	const actor = create_actor(search).start();
@@ -129,7 +129,7 @@
 				onclick={create_handle_click_select(i)}
 				class="interactive"
 			>
-				{match.label}
+				{#if item}{@render item(match)}{:else}{match.label}{/if}
 			</li>
 		{/each}
 	</ol>
