@@ -84,7 +84,7 @@
 
 <div
 	use:click_outside={(evt) => actor.send({ type: 'deactivate' })}
-	style="display:inline-block; width: fit-content;"
+	style="display:inline-block; width: fit-content; position: relative;"
 >
 	<!-- <button
 		onclick={evt => actor.send({type:"oninput", value: _type_ahead?.value})}
@@ -130,7 +130,7 @@
 			</li>
 		{/each}
 	</ol>
-	<div role="status" aria-live="polite" aria-atomic="true">
+	<div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
 		{#if state.matches({ active: 'searching' })}
 			Loading…
 		{:else if state.matches({ active: 'proposing' }) && 0 === state.context.matches.length}
@@ -183,13 +183,36 @@
 
 <style>
 	#proposals {
-		list-style: none;
+		position: absolute;
+		z-index: 1;
+		top: 100%;
+		left: 0;
+		min-width: 100%;
+		margin: 0;
 		padding: 0;
+		list-style: none;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+	}
+	#proposals > li {
+		padding: 0.5em;
 	}
 	li[aria-selected='true'] {
 		outline: auto 5px -webkit-focus-ring-color;
 	}
 	.interactive {
 		cursor: default;
+	}
+
+	/* Screen reader only. Moves the content offscreen, but doesn’t hid it. */
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 </style>
