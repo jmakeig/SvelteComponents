@@ -1,5 +1,4 @@
 import { setup, createMachine, assign, emit, createActor, fromPromise } from 'xstate';
-import { get_colors } from './data.js';
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -21,6 +20,7 @@ export const machine = setup({
 	},
 	actors: {
 		fetch_autocomplete: fromPromise(async ({ input: { search }, signal }) => {
+			throw new Error('sholdn’t be reachable');
 			/*
 				const response = await fetch(`https://httpbin.org/delay/3`, { signal });
       if (!response.ok) {
@@ -28,9 +28,9 @@ export const machine = setup({
       }
       return response.json();
 				*/
-			await delay(100);
+			// await delay(100);
 			// return ['0: ' + search, '1: ' + search, '2: ' + search, '3: ' + search];
-			return get_colors(search);
+			// return get_colors(search);
 		})
 	},
 	guards: {},
@@ -165,4 +165,15 @@ export const machine = setup({
 		*/
 });
 
-export const actor = createActor(machine).start();
+//export const actor = createActor(machine).start();
+export function create_actor(get_matches) {
+	return createActor(
+		machine.provide({
+			actors: {
+				fetch_autocomplete: fromPromise(async ({ input: { search }, signal }) => {
+					return get_matches(search);
+				})
+			}
+		})
+	);
+}
