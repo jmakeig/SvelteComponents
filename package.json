@@ -1,7 +1,23 @@
 {
-  "devDependencies": {
-    "prettier": "^3.8.4",
-    "prettier-plugin-svelte": "^4.1.1",
-    "xstate": "^5.32.1"
-  }
+	"name": "combobox",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check",
+		"format": "prettier --write ."
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "7.0.1",
+		"@sveltejs/kit": "2.66.0",
+		"prettier": "3.8.4",
+		"prettier-plugin-svelte": "4.1.1",
+		"svelte": "5.56.3",
+		"svelte-check": "4.6.0",
+		"vite": "8.0.16",
+		"xstate": "5.32.1"
+	}
 }

@@ -1,22 +1,22 @@
 {
-  "name": "ComboBox",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "features": {
-    "ghcr.io/devcontainers/features/node:2.1.0": {
-      "version": "lts"
-    }
-  },
-  "postCreateCommand": "npm install -g @anthropic-ai/claude-code && npm install",
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "esbenp.prettier-vscode",
-        "svelte.svelte-vscode",
-        "dracula-theme.theme-dracula",
-        "editorconfig.editorconfig"
-      ],
-      "settings": {
-        "workbench.colorTheme": "Dracula",
+	"name": "ComboBox",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"features": {
+		"ghcr.io/devcontainers/features/node:2.1.0": {
+			"version": "lts"
+		}
+	},
+	"postCreateCommand": "npm install -g @anthropic-ai/claude-code && npm install",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"esbenp.prettier-vscode",
+				"svelte.svelte-vscode",
+				"dracula-theme.theme-dracula",
+				"editorconfig.editorconfig"
+			],
+			"settings": {
+				"workbench.colorTheme": "Dracula",
 				"editor.formatOnSave": true,
 				"editor.defaultFormatter": "esbenp.prettier-vscode",
 				"[svelte]": {
@@ -25,6 +25,6 @@
 				"editor.minimap.enabled": false,
 				"scm.diffDecorations": "gutter"
 			}
-    }
-  }
+		}
+	}
 }

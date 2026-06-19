@@ -21,7 +21,7 @@
 		history = [{ snapshot: actor.getPersistedSnapshot(), timestamp: new Date() }, ...history];
 	});
 
-	actor.on('selected', evt => console.log('selected', evt));
+	actor.on('selected', (evt) => console.log('selected', evt));
 
 	function handle_keydown_select(evt) {
 		switch (evt.key) {
@@ -48,7 +48,7 @@
 				actor.send({ type: 'deactivate' });
 				break;
 			default:
-				// console.log(evt.key);
+			// console.log(evt.key);
 		}
 	}
 
@@ -151,7 +151,9 @@
 				<summary>
 					<div style="display: inline-flex; width: calc(100% - 20px);">
 						<div style="flex-grow: 1;">{JSON.stringify(event?.snapshot.value)}</div>
-						<div style="width: fit-content; flex-shrink: 0;">{elapsed > 0 ? '+' : elapsed < 0 ? '-' : ''}{Math.abs(elapsed).toLocaleString()}ms</div>
+						<div style="width: fit-content; flex-shrink: 0;">
+							{elapsed > 0 ? '+' : elapsed < 0 ? '-' : ''}{Math.abs(elapsed).toLocaleString()}ms
+						</div>
 						<!-- <div>({event.timestamp.toISOString()})</div> -->
 					</div>
 				</summary>
