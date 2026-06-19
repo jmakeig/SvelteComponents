@@ -1,7 +1,9 @@
 <!--
 	TODO:
-		* Refactor into proper Svelte component
-		* Refactor machine to inject actor and action implementations
+		* Implement render logic for list items and value.
+		* Add “Create XXX…” for new itemsl
+		✅ Refactor into proper Svelte component
+		✅ Refactor machine to inject actor and action implementations
 		✅ Cancel hanlder (esc, click outside)
     ✅ Use aria-selected instead of focus
 -->
@@ -91,7 +93,7 @@
 		disabled={!state.can({type: "oninput"})}>Input</button> -->
 	<input
 		type="text"
-		{name}
+		id={name}
 		role="combobox"
 		aria-label="Color"
 		aria-autocomplete="list"
@@ -111,6 +113,7 @@
 		onkeydown={handle_keydown_select}
 		use:blur_on_idle
 	/>
+	<input type="text" {name} value={state.context.value?.value}/>
 	<ol
 		id="proposals"
 		role="listbox"
