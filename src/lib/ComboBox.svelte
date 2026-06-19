@@ -34,7 +34,7 @@
 						(state.context.selection ?? -1) + 1
 					)
 				});
-				// evt.preventDefault(); // Prevent scrolling (but what if the list needs to scroll?)
+				evt.preventDefault(); // Prevent scrolling (but what if the list needs to scroll?)
 				break;
 			case 'ArrowUp':
 				actor.send({ type: 'select', selection: Math.max(0, state.context.selection - 1) });
@@ -93,7 +93,10 @@
 	<input
 		type="text"
 		role="combobox"
-		aria-activedescendant={state.context.selection
+		aria-label="Color"
+		aria-autocomplete="list"
+		aria-haspopup="listbox"
+		aria-activedescendant={null !== state.context.selection
 			? 'proposal_' + String(state.context.selection)
 			: undefined}
 		aria-expanded={state.matches({ active: 'proposing' })}
@@ -101,27 +104,33 @@
 		spellcheck="false"
 		autocorrect="off"
 		autocapitalize="off"
+		autocomplete="off"
 		value={state.context.type_ahead}
 		onfocus={(evt) => actor.send({ type: 'activate' })}
 		oninput={(evt) => actor.send({ type: 'oninput', value: evt.target.value })}
 		onkeydown={handle_keydown_select}
 	/> <code>selection: {state.context.selection ?? 'null'} </code>
-	{#if state.matches('active') && state.context.matches.length > 0}
-		<ol id="proposals" role="listbox" aria-label="Items">
-			{#each state.context.matches as match, i}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<li
-					role="option"
-					id={'proposal_' + String(i)}
-					aria-selected={i === state.context.selection}
-					onclick={create_handle_click_select(i)}
-					class="interactive"
-				>
-					{match.label}
-				</li>
-			{/each}
-		</ol>
-	{/if}
+	<ol id="proposals" role="listbox" aria-label="Items" hidden={!state.matches({active: 'proposing'})}>
+		{#each state.context.matches as match, i}
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<li
+				role="option"
+				id={'proposal_' + String(i)}
+				aria-selected={i === state.context.selection}
+				onclick={create_handle_click_select(i)}
+				class="interactive"
+			>
+				{match.label}
+			</li>
+		{/each}
+	</ol>
+	<div role="status" aria-live="polite" aria-atomic="true">
+		{#if state.matches({active: "searching"})}
+			Loading…
+		{:else if state.matches({active:'proposing'}) && 0 === state.context.matches.length}
+			No results
+		{/if}
+	</div>
 </article>
 <!-- <button
 	onclick={evt => actor.send({type:"select", selection: Math.min(state.context.matches.length - 1, (state.context.selection??-1) + 1)})}
