@@ -25,21 +25,6 @@ export const machine = setup({
 		emitted: EmittedEvent;
 		actors: { src: 'fetch_autocomplete'; logic: PromiseActorLogic<Proposal[], { search: string }> };
 	},
-	actions: {
-		update_type_ahead: assign({
-			type_ahead: ({ event }) => (event as Extract<MachineEvent, { type: 'oninput' }>).value
-		}),
-		update_selection: assign({
-			selection: ({ event }) => (event as Extract<MachineEvent, { type: 'select' }>).selection
-		}),
-		clear_proposal: assign({
-			matches: (): Proposal[] => [],
-			selection: (): null => null
-		}),
-		do_commit: assign({
-			value: ({ context }) => context.matches[context.selection!]
-		})
-	},
 	actors: {
 		fetch_autocomplete: fromPromise(
 			async ({ input: { search: _ } }: { input: { search: string } }): Promise<Proposal[]> => {
@@ -92,7 +77,7 @@ export const machine = setup({
 				},
 				searching: {
 					initial: 'debouncing',
-					entry: ['clear_proposal'],
+					entry: [assign({ matches: (): Proposal[] => [], selection: (): null => null })],
 					states: {
 						debouncing: {
 							after: {
@@ -128,13 +113,13 @@ export const machine = setup({
 						select: [
 							{
 								target: 'proposing',
-								actions: [{ type: 'update_selection' }]
+								actions: [assign({ selection: ({ event }) => event.selection })]
 							}
 						],
 						commit: [
 							{
 								target: 'committed',
-								actions: [{ type: 'do_commit' }]
+								actions: [assign({ value: ({ context }) => context.matches[context.selection!] })]
 							}
 						]
 					}
@@ -156,7 +141,7 @@ export const machine = setup({
 				oninput: [
 					{
 						target: '#combo_box.active.waiting',
-						actions: [{ type: 'update_type_ahead' }],
+						actions: [assign({ type_ahead: ({ event }) => event.value })],
 						reenter: true
 					}
 				]
