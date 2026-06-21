@@ -915,15 +915,14 @@ const ENTITIES: Array<Entity> = [
 	}
 ];
 
-async function search(
-	list: Array<Entity>,
-	input: string,
-	flatten = (item: Proposal) => item.name,
-	limit = 10
-) {
+async function search(list: Array<Entity>, input: string, limit = 10): Promise<Array<Entity>> {
 	if ('' === input) return [];
-	const fuzzy = new ufuzzy();
-	const haystack = list.map(flatten); // Mapped to flat list
+
+	const options: ufuzzy.Options = { intraMode: 1 };
+	const fuzzy = new ufuzzy(options);
+	const haystack = list.map((item) =>
+		item.type === 'workload' ? `${item.name}\t${item.ref.name}` : item.name
+	);
 
 	const indexes = fuzzy.filter(haystack, input);
 	if (null === indexes) return [];
@@ -931,7 +930,10 @@ async function search(
 	const order = fuzzy.sort(info, haystack, input);
 
 	// YIKES! This two-level indirection was not at all obvious
-	return order.map((o) => info.idx[o]).map((i) => list[i]);
+	return order
+		.map((o) => info.idx[o])
+		.map((i) => list[i])
+		.slice(0, limit);
 }
 
 export async function match_entities(input: string) {
