@@ -8,7 +8,7 @@
     ✅ Use aria-selected instead of focus
 -->
 
-<script lang="ts">
+<script lang="ts" generics="T extends Proposal">
 	import type { Snippet } from 'svelte';
 	import type { SnapshotFrom } from 'xstate';
 	import type { Proposal } from './types.js';
@@ -16,9 +16,9 @@
 
 	interface Props {
 		name: string;
-		search: (query: string) => Promise<Proposal[]>;
+		search: (query: string) => Promise<T[]>;
 		debug?: boolean;
-		item?: Snippet<[Proposal]>;
+		item?: Snippet<[T]>;
 	}
 
 	let { name, search, debug = false, item }: Props = $props();
@@ -139,7 +139,7 @@
 				onclick={create_handle_click_select(i)}
 				class="interactive"
 			>
-				{#if item}{@render item(match)}{:else}{match.label}{/if}
+				{#if item}{@render item(match as T)}{:else}{match.label}{/if}
 			</li>
 		{/each}
 	</ol>
