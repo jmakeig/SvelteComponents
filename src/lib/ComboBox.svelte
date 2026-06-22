@@ -97,7 +97,9 @@
 </script>
 
 <div
-	use:click_outside={(evt) => actor.send({ type: 'deactivate' })}
+	use:click_outside={(evt) => {
+		if (!snap.matches('idle')) actor.send({ type: 'deactivate' });
+	}}
 	style="display:inline-block; width: fit-content; position: relative;"
 >
 	<input
@@ -157,7 +159,7 @@
 		id={'history_' + component_id}
 		style="background: #ddd; padding: 0.5em; max-height: 12em; overflow: auto;"
 	>
-	<!-- position: absolute; z-index: 10; top: 0; right: 0; width: 33%; height: 40em; overflow: auto;  -->
+		<!-- position: absolute; z-index: 10; top: 0; right: 0; width: 33%; height: 40em; overflow: auto;  -->
 		<h1 style="font-family: monospace; margin: 0.5em 0;">{JSON.stringify(snap?.value)}</h1>
 		<details open style="margin-top: 1em; padding: 1em; border: solid 1px #ccc;">
 			<summary>History</summary>
