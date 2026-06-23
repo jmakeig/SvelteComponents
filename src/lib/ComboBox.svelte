@@ -209,12 +209,14 @@
 		margin: 0;
 		padding: 0;
 		list-style: none;
-		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-
-		background: #ddd;
+		/* box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); */
+		box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+		background-color: #fff;
 	}
 	#proposals > li {
 		padding: 0.5em;
+		border-bottom: solid 0.5px hsl(from currentColor h s 75%);
+		border-top: solid 0.5px hsl(from currentColor h s 95%);
 	}
 	li[aria-selected='true'] {
 		outline: auto 5px -webkit-focus-ring-color;

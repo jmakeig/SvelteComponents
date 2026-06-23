@@ -15,8 +15,8 @@
 					<div class="ref">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							width="24"
-							height="24"
+							width="1em"
+							height="1em"
 							viewBox="0 0 24 24"
 							fill="none"
 							stroke="currentColor"
@@ -37,8 +37,8 @@
 					{#if 'company' === match.type}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							width="24"
-							height="24"
+							width="1em"
+							height="1em"
 							viewBox="0 0 24 24"
 							fill="none"
 							stroke="currentColor"
@@ -55,8 +55,8 @@
 					{:else if 'workload' === match.type}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							width="24"
-							height="24"
+							width="1em"
+							height="1em"
 							viewBox="0 0 24 24"
 							fill="none"
 							stroke="currentColor"
@@ -95,11 +95,18 @@
 	.control {
 		margin: 2em 0;
 	}
+	.item {
+	}
+	.item .ref {
+		margin-bottom: 0.25em;
+		color: hsl(from currentColor h s 50%);
+	}
 	.item .ref,
 	.item .meta {
 		font-size: 0.85em;
 	}
 	.meta {
+		margin-top: 0.25em;
 		color: hsl(from currentColor h s 50%);
 	}
 </style>
