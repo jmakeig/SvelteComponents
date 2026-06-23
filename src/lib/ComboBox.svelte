@@ -125,7 +125,7 @@
 			actor.send({ type: 'oninput', value: (evt.target as HTMLInputElement).value })}
 		onkeydown={handle_keydown_select}
 		use:blur_on_idle
-		style="grid-area: 1/1; width: 20em;"
+		style="grid-area: 1/1;"
 	/>
 	{#if snap.matches({ active: 'searching' })}
 		<div class="search_spinner" style="grid-area: 1/1; justify-self: end; padding-right: 0.25em;">
@@ -180,7 +180,7 @@
 		id={'history_' + component_id}
 		style="background: #ddd; padding: 0.5em; max-height: 12em; overflow: auto;"
 	>
-		<!-- position: absolute; z-index: 10; top: 0; right: 0; width: 33%; height: 40em; overflow: auto;  -->
+
 		<h1 style="font-family: monospace; margin: 0.5em 0;">{JSON.stringify(snap?.value)}</h1>
 		<details open style="margin-top: 1em; padding: 1em; border: solid 1px #ccc;">
 			<summary>History</summary>
