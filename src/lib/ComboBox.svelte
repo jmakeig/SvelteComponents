@@ -16,9 +16,29 @@
 	import { create_actor, machine } from './machine.js';
 
 	interface Props {
+		/**
+		 * The unique name of the form element that will be be sumitted as.
+		 * This also does double duty as the `@id` of type-ahead `input` so that
+		 * the `@for` works on the `label`.
+		 */
 		name: string;
+		/**
+		 * The implementation of the ansync search. Takes the typeahead text and
+		 * returns an array of matching proposals. That’s generic so the consumer will
+		 * work with strongly typed concrete types, not just the `Proposal` interface.
+		 * @param query The typeahead text. Most implementations will likely want to
+		 * @returns The ordered collection of proposed matches, extends `Proposal`.
+		 * When there are no matches, just return `[]`.
+		 */
 		search: (query: string) => Promise<T[]>;
+		/**
+		 * Enables UI that tracks the history of the state machine
+		 * as well as the hidden input that actually gets submitted.
+		 */
 		debug?: 'true' | 'false' | boolean;
+		/**
+		 * The snippet that implements the display of the matching proposal in the dropdown.
+		 */
 		item?: Snippet<[T]>;
 	}
 
@@ -33,7 +53,10 @@
 
 	actor.subscribe((snapshot) => {
 		snap = snapshot;
-		history = [{ snapshot, timestamp: new Date() }, ...history];
+		if (debug) {
+			/** Appends in reverse chronological order. */
+			history = [{ snapshot, timestamp: new Date() }, ...history];
+		}
 	});
 	actor.on('selected', (evt) => console.log('selected', evt));
 
@@ -107,7 +130,7 @@
 	<div style="display: grid; align-items: center; position: relative;">
 		<input
 			type="text"
-			id={name /* This allows label/@for to work */}
+			id={name}
 			role="combobox"
 			aria-label="Color"
 			aria-autocomplete="list"
@@ -183,7 +206,6 @@
 		id={'history_' + component_id}
 		style="background: #ddd; padding: 0.5em; max-height: 12em; overflow: auto;"
 	>
-
 		<h1 style="font-family: monospace; margin: 0.5em 0;">{JSON.stringify(snap?.value)}</h1>
 		<details open style="margin-top: 1em; padding: 1em; border: solid 1px #ccc;">
 			<summary>History</summary>
