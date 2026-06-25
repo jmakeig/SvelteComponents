@@ -87,6 +87,7 @@ form .control label {
 	flex-grow: 0;
 	flex-shrink: 0;
 	flex-basis: 8em;
+	max-width: 8em;
 	text-align: right;
 }
 form div.control.actions {

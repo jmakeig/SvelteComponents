@@ -1,5 +1,5 @@
 <script lang="ts">
-	// import { get_colors } from '$lib/data.js';
+	import { get_colors } from '$lib/data.js';
 	import ComboBox from '$lib/ComboBox.svelte';
 
 	import { match_entities } from '$lib/pipeline';
@@ -8,12 +8,13 @@
 <form>
 	<div class="control">
 		<label for="customer-workload">Customer/Workload</label>
-		<div class="contents"><input/></div>
-	</div>
-	<div class="control">
-		<label for="customer-workload">Customer/Workload</label>
 		<div class="contents">
-			<ComboBox name="customer-workload" search={match_entities} debug="false">
+			<ComboBox
+				name="customer-workload"
+				label="Customer or Workload"
+				search={match_entities}
+				debug="false"
+			>
 				{#snippet item(match)}
 					<div class="item">
 						{#if 'ref' in match}
@@ -88,17 +89,48 @@
 			</ComboBox>
 		</div>
 	</div>
+
+	<div class="control">
+		<label for="color1">Color</label>
+		<div class="contents">
+			<ComboBox name="color1" label="Color" search={get_colors}>
+				{#snippet item(match)}
+					<strong>{match.label}</strong> — {match.value}
+				{/snippet}
+			</ComboBox>
+		</div>
+	</div>
+
+	<div class="control">
+		<label for="color2">Disabled</label>
+		<div class="contents">
+			<ComboBox name="color2" label="Color" search={get_colors} disabled>
+				{#snippet item(match)}
+					<strong>{match.label}</strong> — {match.value}
+				{/snippet}
+			</ComboBox>
+		</div>
+	</div>
+	<div class="control">
+		<label for="color2">Read-only</label>
+		<div class="contents">
+			<ComboBox name="color2" label="Color" search={get_colors} readonly>
+				{#snippet item(match)}
+					<strong>{match.label}</strong> — {match.value}
+				{/snippet}
+			</ComboBox>
+		</div>
+	</div>
+	<div class="control">
+		<label for="vanilla">Vanilla</label>
+		<div class="contents"><input id="vanilla"/></div>
+	</div>
 </form>
 
-<!-- <div class="control">
-	<ComboBox name="color" search={get_colors} debug>
-		{#snippet item(match)}
-			<strong>{match.label}</strong> — {match.value}
-		{/snippet}
-	</ComboBox>
-</div> -->
-
 <style>
+	form {
+		width: 60%;
+	}
 	.item .ref {
 		margin-bottom: 0.25em;
 		color: hsl(from currentColor h s 50%);

@@ -14,6 +14,7 @@
 	import type { SnapshotFrom } from 'xstate';
 	import type { Proposal } from './types.js';
 	import { create_actor, machine } from './machine.js';
+	import type { Booleanish } from 'svelte/elements';
 
 	interface Props {
 		/**
@@ -22,6 +23,7 @@
 		 * the `@for` works on the `label`.
 		 */
 		name: string;
+		label: string;
 		/**
 		 * The implementation of the ansync search. Takes the typeahead text and
 		 * returns an array of matching proposals. That’s generic so the consumer will
@@ -35,15 +37,28 @@
 		 * Enables UI that tracks the history of the state machine
 		 * as well as the hidden input that actually gets submitted.
 		 */
-		debug?: 'true' | 'false' | boolean;
+		debug?: Booleanish;
 		/**
 		 * The snippet that implements the display of the matching proposal in the dropdown.
 		 */
 		item?: Snippet<[T]>;
+		disabled?: Booleanish;
+		readonly?: Booleanish;
 	}
 
-	let { name, search, debug: _debug = false, item }: Props = $props();
-	let debug = $derived(true === _debug || 'true' === _debug);
+	let {
+		name,
+		label,
+		search,
+		item,
+		debug: _debug = false,
+		disabled: _disabled = false,
+		readonly: _readonly = false
+	}: Props = $props();
+
+	let debug = $derived(true === _debug || 'true' === _debug),
+		disabled = $derived(true === _disabled || 'true' === _disabled),
+		readonly = $derived(true === _readonly || 'true' === _readonly);
 	const component_id = $props.id();
 
 	// svelte-ignore state_referenced_locally
@@ -132,7 +147,7 @@
 			type="text"
 			id={name}
 			role="combobox"
-			aria-label="Color"
+			aria-label={label}
 			aria-autocomplete="list"
 			aria-haspopup="listbox"
 			aria-activedescendant={null !== snap.context.selection
@@ -140,16 +155,18 @@
 				: undefined}
 			aria-expanded={snap.matches({ active: 'proposing' })}
 			aria-controls="proposals"
-			spellcheck="false"
-			autocorrect="off"
-			autocapitalize="off"
-			autocomplete="off"
 			value={snap.context.type_ahead}
 			onfocus={(evt) => actor.send({ type: 'activate' })}
 			oninput={(evt) =>
 				actor.send({ type: 'oninput', value: (evt.target as HTMLInputElement).value })}
 			onkeydown={handle_keydown_select}
 			use:blur_on_idle
+			{disabled}
+			{readonly}
+			spellcheck="false"
+			autocorrect="off"
+			autocapitalize="off"
+			autocomplete="off"
 			style="grid-area: 1/1;"
 		/>
 		{#if snap.matches({ active: 'searching' })}
