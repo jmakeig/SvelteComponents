@@ -13,13 +13,13 @@
 	"devDependencies": {
 		"@leeoniya/ufuzzy": "1.0.19",
 		"@sveltejs/adapter-auto": "7.0.1",
-		"@sveltejs/kit": "2.66.0",
+		"@sveltejs/kit": "2.68.0",
 		"prettier": "3.8.4",
 		"prettier-plugin-svelte": "4.1.1",
-		"svelte": "5.56.3",
-		"svelte-check": "4.6.0",
+		"svelte": "5.56.4",
+		"svelte-check": "4.7.1",
 		"typescript": "6.0.3",
-		"vite": "8.0.16",
-		"xstate": "5.32.1"
+		"vite": "8.1.0",
+		"xstate": "5.32.2"
 	}
 }
