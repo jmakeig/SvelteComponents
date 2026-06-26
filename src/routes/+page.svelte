@@ -15,9 +15,9 @@
 				search={match_entities}
 				debug="false"
 			>
-				{#snippet item(match)}
+				{#snippet item(match, mode)}
 					<div class="item">
-						{#if 'ref' in match}
+						{#if 'ref' in match && 'compact' !== mode}
 							<div class="ref">
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -81,9 +81,11 @@
 							{/if}
 							{match.name}
 						</div>
-						<div class="meta">
-							Last updated by <span class="user">Alice</span> <span class="duration">2 days</span> ago
-						</div>
+						{#if 'compact' !== mode}
+							<div class="meta">
+								Last updated by <span class="user">Alice</span> <span class="duration">2 days</span> ago
+							</div>
+						{/if}
 					</div>
 				{/snippet}
 			</ComboBox>

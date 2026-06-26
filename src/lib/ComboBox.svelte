@@ -16,6 +16,12 @@
 	import { create_actor, machine } from './machine.js';
 	import type { Booleanish } from 'svelte/elements';
 
+	/**
+	 * Items can be rendered in the proposal list or as a value in the idle state.
+	 * `'compact'` represents the latter.
+	 */
+	type RenderMode = 'compact';
+
 	interface Props {
 		/**
 		 * The unique name of the form element that will be be sumitted as.
@@ -41,7 +47,7 @@
 		/**
 		 * The snippet that implements the display of the matching proposal in the dropdown.
 		 */
-		item?: Snippet<[T]>;
+		item?: Snippet<[T, RenderMode?]>;
 		disabled?: Booleanish;
 		readonly?: Booleanish;
 	}
@@ -144,7 +150,7 @@
 >
 	{#if snap.matches('idle')}
 		{#if snap.context.value}
-			{@render item(snap.context.value as T)}
+			{@render item(snap.context.value as T, 'compact')}
 		{/if}
 		<!-- TODO: Style this so the pencil is to the right of the rendered proposal -->
 		{#if !disabled && !readonly}
@@ -298,7 +304,7 @@
 {/if}
 
 <!-- Defaul rendering for proposals -->
-{#snippet fallback_item(proposal: Proposal)}
+{#snippet fallback_item(proposal: Proposal, mode?: string)}
 	{proposal.name} ({proposal.value})
 {/snippet}
 
