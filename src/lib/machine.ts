@@ -4,7 +4,7 @@ import type { Proposal } from './types.js';
 
 type Context = {
 	type_ahead: string;
-	matches: Proposal[];
+	matches: Proposal[]; // TODO: Make this generic, e.g. `T extends Proposal`
 	selection: number | null;
 	value: Proposal | null;
 };
@@ -119,13 +119,20 @@ export const machine = setup({
 						commit: [
 							{
 								target: 'committed',
-								actions: [assign({ value: ({ context }) => context.matches[context.selection!] })]
+								actions: [
+									assign({
+										value: ({ context }) => context.matches[context.selection!],
+										type_ahead: ({ context }) => context.matches[context.selection!].name
+									})
+								]
 							}
 						]
 					}
 				},
 				committed: {
-					entry: [emit(({ context }) => ({ type: 'selected' as const, value: context.value!.value }))]
+					entry: [
+						emit(({ context }) => ({ type: 'selected' as const, value: context.value!.value }))
+					]
 				},
 				error: {
 					//TODO
@@ -150,7 +157,9 @@ export const machine = setup({
 	}
 });
 
-export function create_actor(get_matches: (query: string) => Promise<Proposal[]>): Actor<typeof machine> {
+export function create_actor(
+	get_matches: (query: string) => Promise<Proposal[]>
+): Actor<typeof machine> {
 	return createActor(
 		machine.provide({
 			actors: {

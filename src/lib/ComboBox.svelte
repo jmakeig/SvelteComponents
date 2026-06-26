@@ -142,35 +142,17 @@
 	}}
 	style="display: contents;"
 >
-	<div style="display: grid; align-items: center; position: relative;">
-		<input
-			type="text"
-			id={name}
-			role="combobox"
-			aria-label={label}
-			aria-autocomplete="list"
-			aria-haspopup="listbox"
-			aria-activedescendant={null !== snap.context.selection
-				? 'proposal_' + String(snap.context.selection)
-				: undefined}
-			aria-expanded={snap.matches({ active: 'proposing' })}
-			aria-controls="proposals"
-			value={snap.context.type_ahead}
-			onfocus={(evt) => actor.send({ type: 'activate' })}
-			oninput={(evt) =>
-				actor.send({ type: 'oninput', value: (evt.target as HTMLInputElement).value })}
-			onkeydown={handle_keydown_select}
-			use:blur_on_idle
-			{disabled}
-			{readonly}
-			spellcheck="false"
-			autocorrect="off"
-			autocapitalize="off"
-			autocomplete="off"
-			style="grid-area: 1/1;"
-		/>
-		{#if snap.matches({ active: 'searching' })}
-			<div class="search_spinner" style="grid-area: 1/1; justify-self: end; padding-right: 0.25em;">
+	{#if snap.matches('idle')}
+		{#if snap.context.value}
+			{@render item(snap.context.value as T)}
+		{/if}
+		<!-- TODO: Style this so the pencil is to the right of the rendered proposal -->
+		{#if !disabled && !readonly}
+			<button
+				title="Edit"
+				onclick={(evt) => actor.send({ type: 'activate' })}
+				style="padding: 0; background: none; border-style: none;"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="1em"
@@ -181,40 +163,93 @@
 					stroke-width="2"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					class="spinning icon icon-tabler icons-tabler-outline icon-tabler-rotate-clockwise"
+					class="icon icon-tabler icons-tabler-outline icon-tabler-edit"
+					><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
+						d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"
+					/><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415" /><path
+						d="M16 5l3 3"
+					/></svg
 				>
-					<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-					<path d="M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5" />
-				</svg>
-			</div>
+			</button>
 		{/if}
-		<ol
-			id="proposals"
-			role="listbox"
-			aria-label="Items"
-			hidden={!snap.matches({ active: 'proposing' })}
-		>
-			{#each snap.context.matches as match, i}
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<li
-					role="option"
-					id={'proposal_' + String(i)}
-					aria-selected={i === snap.context.selection}
-					onclick={create_handle_click_select(i)}
-					class="interactive"
-				>
-					{@render item(match as T)}
-				</li>
-			{/each}
-		</ol>
-		<div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
+	{:else if snap.matches('active')}
+		<div style="display: grid; align-items: center; position: relative;">
+			<input
+				type="text"
+				id={name}
+				role="combobox"
+				aria-label={label}
+				aria-autocomplete="list"
+				aria-haspopup="listbox"
+				aria-activedescendant={null !== snap.context.selection
+					? 'proposal_' + String(snap.context.selection)
+					: undefined}
+				aria-expanded={snap.matches({ active: 'proposing' })}
+				aria-controls="proposals"
+				value={snap.context.type_ahead}
+				onfocus={(evt) => actor.send({ type: 'activate' })}
+				oninput={(evt) =>
+					actor.send({ type: 'oninput', value: (evt.target as HTMLInputElement).value })}
+				onkeydown={handle_keydown_select}
+				use:blur_on_idle
+				{disabled}
+				{readonly}
+				spellcheck="false"
+				autocorrect="off"
+				autocapitalize="off"
+				autocomplete="off"
+				style="grid-area: 1/1;"
+			/>
 			{#if snap.matches({ active: 'searching' })}
-				Loading…
-			{:else if snap.matches({ active: 'proposing' }) && 0 === snap.context.matches.length}
-				No results
+				<div
+					class="search_spinner"
+					style="grid-area: 1/1; justify-self: end; padding-right: 0.25em;"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="1em"
+						height="1em"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="spinning icon icon-tabler icons-tabler-outline icon-tabler-rotate-clockwise"
+					>
+						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+						<path d="M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5" />
+					</svg>
+				</div>
 			{/if}
+			<ol
+				id="proposals"
+				role="listbox"
+				aria-label="Items"
+				hidden={!snap.matches({ active: 'proposing' })}
+			>
+				{#each snap.context.matches as match, i}
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<li
+						role="option"
+						id={'proposal_' + String(i)}
+						aria-selected={i === snap.context.selection}
+						onclick={create_handle_click_select(i)}
+						class="interactive"
+					>
+						{@render item(match as T)}
+					</li>
+				{/each}
+			</ol>
+			<div role="status" aria-live="polite" aria-atomic="true" class="sr-only">
+				{#if snap.matches({ active: 'searching' })}
+					Loading…
+				{:else if snap.matches({ active: 'proposing' }) && 0 === snap.context.matches.length}
+					No results
+				{/if}
+			</div>
 		</div>
-	</div>
+	{/if}
 	<input type={debug ? 'text' : 'hidden'} {name} value={snap.context.value?.value} />
 </div>
 
