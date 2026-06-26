@@ -15,7 +15,8 @@
 				"svelte.svelte-vscode",
 				"dracula-theme.theme-dracula",
 				"editorconfig.editorconfig",
-				"anthropic.claude-code"
+				"anthropic.claude-code",
+				"statelyai.stately-vscode"
 			],
 			"settings": {
 				"remote.autoForwardPorts": false,
