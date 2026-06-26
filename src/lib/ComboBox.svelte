@@ -50,7 +50,7 @@
 		name,
 		label,
 		search,
-		item,
+		item = fallback_item,
 		debug: _debug = false,
 		disabled: _disabled = false,
 		readonly: _readonly = false
@@ -203,7 +203,7 @@
 					onclick={create_handle_click_select(i)}
 					class="interactive"
 				>
-					{#if item}{@render item(match as T)}{:else}{match.label}{/if}
+					{@render item(match as T)}
 				</li>
 			{/each}
 		</ol>
@@ -261,6 +261,11 @@
 		</details>
 	</div>
 {/if}
+
+<!-- Defaul rendering for proposals -->
+{#snippet fallback_item(proposal: Proposal)}
+	{proposal.name} ({proposal.value})
+{/snippet}
 
 <style>
 	#proposals {
