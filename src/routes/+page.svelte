@@ -125,7 +125,7 @@
 	</div>
 	<div class="control">
 		<label for="vanilla">Vanilla</label>
-		<div class="contents"><input id="vanilla"/></div>
+		<div class="contents"><input id="vanilla" /></div>
 	</div>
 </form>
 
