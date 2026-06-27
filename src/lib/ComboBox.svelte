@@ -166,29 +166,29 @@
 			{#if !disabled && !readonly}
 				<button
 					title="Edit"
-					onclick={(evt) => actor.send({ type: 'activate' })}
+					onclick={(evt) => (evt.preventDefault(), actor.send({ type: 'activate' }))}
 					class="action"
 					style="padding: 0.25em 0.5em; background: none; border-style: none;"
 				>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="1em"
-					height="1em"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					class="icon icon-tabler icons-tabler-outline icon-tabler-edit"
-					><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
-						d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"
-					/><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415" /><path
-						d="M16 5l3 3"
-					/></svg
-				>
-			</button>
-		{/if}
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="1em"
+						height="1em"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-edit"
+						><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
+							d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"
+						/><path
+							d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415"
+						/><path d="M16 5l3 3" /></svg
+					>
+				</button>
+			{/if}
 		</div>
 	{:else if snap.matches('active')}
 		<div class="field" style="position: relative;">
@@ -237,6 +237,29 @@
 						<path d="M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5" />
 					</svg>
 				</div>
+			{:else}
+				<button
+					title="Edit"
+					onclick={(evt) => (evt.preventDefault(), actor.send({ type: 'clear' }))}
+					class="action"
+					style="padding: 0.25em 0.5em; background: none; border-style: none;"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="1em"
+						height="1em"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="icon icon-tabler icons-tabler-outline icon-tabler-xbox-x"
+						><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
+							d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9"
+						/><path d="M9 8l6 8" /><path d="M15 8l-6 8" /></svg
+					>
+				</button>
 			{/if}
 			<ol
 				id="proposals"
@@ -319,6 +342,12 @@
 {/snippet}
 
 <style>
+	svg {
+		background: yellow !important;
+	}
+	button {
+		background: red !important;
+	}
 	.field {
 		display: grid;
 		align-items: center;

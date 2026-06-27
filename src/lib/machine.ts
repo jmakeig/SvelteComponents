@@ -13,6 +13,7 @@ type MachineEvent =
 	| { type: 'activate' }
 	| { type: 'deactivate' }
 	| { type: 'oninput'; value: string }
+	| { type: 'clear' }
 	| { type: 'select'; selection: number }
 	| { type: 'commit' };
 
@@ -150,6 +151,11 @@ export const machine = setup({
 						target: '#combo_box.active.waiting',
 						actions: [assign({ type_ahead: ({ event }) => event.value })],
 						reenter: true
+					}
+				],
+				clear: [
+					{
+						actions: [assign({ type_ahead: () => '' })]
 					}
 				]
 			}
