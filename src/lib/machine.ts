@@ -159,7 +159,14 @@ export const machine = setup({
 				],
 				clear: [
 					{
-						actions: [assign({ type_ahead: () => '' }), 'focus_input']
+						actions: [
+							assign({
+								type_ahead: () => '',
+								matches: () => [],
+								selection: () => null
+							}),
+							'focus_input'
+						]
 					}
 				]
 			}
