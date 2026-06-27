@@ -7,7 +7,7 @@
 		}
 	},
 	"forwardPorts": [5173],
-	"postCreateCommand": "npm install -g @anthropic-ai/claude-code && npm install",
+	"postCreateCommand": "npm install -g npm@latest && npm install -g @anthropic-ai/claude-code && npm install",
 	"customizations": {
 		"vscode": {
 			"extensions": [
