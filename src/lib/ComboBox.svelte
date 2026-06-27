@@ -50,6 +50,7 @@
 		item?: Snippet<[T, RenderMode?]>;
 		disabled?: Booleanish;
 		readonly?: Booleanish;
+		placeholder?: string;
 	}
 
 	let {
@@ -59,7 +60,8 @@
 		item = fallback_item,
 		debug: _debug = false,
 		disabled: _disabled = false,
-		readonly: _readonly = false
+		readonly: _readonly = false,
+		placeholder = name
 	}: Props = $props();
 
 	let debug = $derived(true === _debug || 'true' === _debug),
@@ -153,16 +155,21 @@
 	style="display: contents;"
 >
 	{#if snap.matches('idle')}
-		{#if snap.context.value}
-			{@render item(snap.context.value as T, 'compact')}
-		{/if}
-		<!-- TODO: Style this so the pencil is to the right of the rendered proposal -->
-		{#if !disabled && !readonly}
-			<button
-				title="Edit"
-				onclick={(evt) => actor.send({ type: 'activate' })}
-				style="padding: 0; background: none; border-style: none;"
-			>
+		<div class="field">
+			<span>
+				{#if snap.context.value}
+					{@render item(snap.context.value as T, 'compact')}
+				{:else}
+					{placeholder}
+				{/if}
+			</span>
+			{#if !disabled && !readonly}
+				<button
+					title="Edit"
+					onclick={(evt) => actor.send({ type: 'activate' })}
+					class="action"
+					style="padding: 0.25em 0.5em; background: none; border-style: none;"
+				>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="1em"
@@ -182,8 +189,9 @@
 				>
 			</button>
 		{/if}
+		</div>
 	{:else if snap.matches('active')}
-		<div style="display: grid; align-items: center; position: relative;">
+		<div class="field" style="position: relative;">
 			<input
 				type="text"
 				id={name}
@@ -205,17 +213,14 @@
 				use:blur_on_idle
 				{disabled}
 				{readonly}
+				{placeholder}
 				spellcheck="false"
 				autocorrect="off"
 				autocapitalize="off"
 				autocomplete="off"
-				style="grid-area: 1/1;"
 			/>
 			{#if snap.matches({ active: 'searching' })}
-				<div
-					class="search_spinner"
-					style="grid-area: 1/1; justify-self: end; padding-right: 0.25em;"
-				>
+				<div class="search_spinner action">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="1em"
@@ -314,6 +319,19 @@
 {/snippet}
 
 <style>
+	.field {
+		display: grid;
+		align-items: center;
+	}
+	.field > * {
+		grid-area: 1/1;
+	}
+	.action {
+		justify-self: end;
+	}
+	.search_spinner {
+		padding-right: 0.25em;
+	}
 	#proposals {
 		position: absolute;
 		z-index: 1;
