@@ -169,23 +169,7 @@
 					onclick={(evt) => (evt.preventDefault(), actor.send({ type: 'activate' }))}
 					class="action"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="1em"
-						height="1em"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="icon icon-tabler icons-tabler-outline icon-tabler-edit"
-						><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
-							d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"
-						/><path
-							d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415"
-						/><path d="M16 5l3 3" /></svg
-					>
+					{@render icon_edit()}
 				</button>
 			{/if}
 		</div>
@@ -220,21 +204,7 @@
 			/>
 			{#if snap.matches({ active: 'searching' })}
 				<div class="search_spinner action">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="1em"
-						height="1em"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="spinning icon icon-tabler icons-tabler-outline icon-tabler-rotate-clockwise"
-					>
-						<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-						<path d="M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5" />
-					</svg>
+					{@render icon_spinner()}
 				</div>
 			{:else}
 				<button
@@ -243,21 +213,7 @@
 					disabled={!snap.context.type_ahead}
 					class="action"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="1em"
-						height="1em"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						class="icon icon-tabler icons-tabler-outline icon-tabler-xbox-x"
-						><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
-							d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9"
-						/><path d="M9 8l6 8" /><path d="M15 8l-6 8" /></svg
-					>
+					{@render icon_clear()}
 				</button>
 			{/if}
 			<ol
@@ -334,6 +290,62 @@
 		</details>
 	</div>
 {/if}
+
+{#snippet icon_edit(width = '1em', height = '1em')}
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		{width}
+		{height}
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		class="icon icon-tabler icons-tabler-outline icon-tabler-edit"
+		><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
+			d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"
+		/><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415" /><path
+			d="M16 5l3 3"
+		/></svg
+	>
+{/snippet}
+
+{#snippet icon_spinner(width = '1em', height = '1em')}
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		{width}
+		{height}
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		class="spinning icon icon-tabler icons-tabler-outline icon-tabler-rotate-clockwise"
+	>
+		<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+		<path d="M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5" />
+	</svg>
+{/snippet}
+
+{#snippet icon_clear(width = '1em', height = '1em')}
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		{width}
+		{height}
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		class="icon icon-tabler icons-tabler-outline icon-tabler-xbox-x"
+		><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
+			d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9"
+		/><path d="M9 8l6 8" /><path d="M15 8l-6 8" /></svg
+	>
+{/snippet}
 
 <!-- Defaul rendering for proposals -->
 {#snippet fallback_item(proposal: Proposal, mode?: string)}
