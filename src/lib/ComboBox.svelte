@@ -370,6 +370,8 @@
 		justify-self: end;
 	}
 	button.action {
+		display: flex;
+		align-items: center;
 		padding: 0.25em 0.5em;
 		background: none;
 		border-style: none;
