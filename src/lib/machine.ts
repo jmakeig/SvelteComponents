@@ -70,6 +70,11 @@ export const machine = setup({
 							target: 'searching.fetching',
 							guard: ({ context }) => context.type_ahead.length > 2
 						}
+					],
+					actions: [
+						assign({
+							type_ahead: ({ context }) => context.value?.name ?? ''
+						})
 					]
 				},
 				waiting: {
