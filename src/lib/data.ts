@@ -1,6 +1,6 @@
-import type { Proposal } from './types.ts';
+import type { Match } from './types.ts';
 
-export interface Color extends Proposal {}
+export interface Color extends Match {}
 
 const COLORS: readonly Color[] = [
 	{ value: 'amber', name: 'Amber' },

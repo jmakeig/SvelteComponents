@@ -9,15 +9,15 @@
 		✅ Use aria-selected instead of focus
 -->
 
-<script lang="ts" generics="T extends Proposal">
+<script lang="ts" generics="T extends Match">
 	import type { Snippet } from 'svelte';
 	import type { SnapshotFrom } from 'xstate';
-	import type { Proposal } from './types.js';
+	import type { Match } from './types.js';
 	import { create_actor, machine } from './machine.js';
 	import type { Booleanish } from 'svelte/elements';
 
 	/**
-	 * Items can be rendered in the proposal list or as a value in the idle state.
+	 * Items can be rendered in the match list or as a value in the idle state.
 	 * `'compact'` represents the latter.
 	 */
 	type RenderMode = 'compact';
@@ -32,10 +32,10 @@
 		label: string;
 		/**
 		 * The implementation of the ansync search. Takes the typeahead text and
-		 * returns an array of matching proposals. That’s generic so the consumer will
-		 * work with strongly typed concrete types, not just the `Proposal` interface.
+		 * returns an array of matching matches. That’s generic so the consumer will
+		 * work with strongly typed concrete types, not just the `Match` interface.
 		 * @param query The typeahead text. Most implementations will likely want to
-		 * @returns The ordered collection of proposed matches, extends `Proposal`.
+		 * @returns The ordered collection of proposed matches, extends `Match`.
 		 * When there are no matches, just return `[]`.
 		 */
 		search: (query: string) => Promise<T[]>;
@@ -45,7 +45,7 @@
 		 */
 		debug?: Booleanish;
 		/**
-		 * The snippet that implements the display of the matching proposal in the dropdown.
+		 * The snippet that implements the display of the matching match in the dropdown.
 		 */
 		item?: Snippet<[T, RenderMode?]>;
 		disabled?: Booleanish;
@@ -184,10 +184,10 @@
 				aria-autocomplete="list"
 				aria-haspopup="listbox"
 				aria-activedescendant={null !== snap.context.selection
-					? 'proposal_' + String(snap.context.selection)
+					? 'match_' + String(snap.context.selection)
 					: undefined}
 				aria-expanded={snap.matches({ active: 'proposing' })}
-				aria-controls="proposals"
+				aria-controls="matches"
 				value={snap.context.type_ahead}
 				onfocus={(evt) => actor.send({ type: 'activate' })}
 				oninput={(evt) =>
@@ -219,7 +219,7 @@
 				</button>
 			{/if}
 			<ol
-				id="proposals"
+				id="matches"
 				role="listbox"
 				aria-label="Items"
 				hidden={!snap.matches({ active: 'proposing' })}
@@ -228,7 +228,7 @@
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<li
 						role="option"
-						id={'proposal_' + String(i)}
+						id={'match_' + String(i)}
 						aria-selected={i === snap.context.selection}
 						onclick={create_handle_click_select(i)}
 						class="interactive"
@@ -349,9 +349,9 @@
 	>
 {/snippet}
 
-<!-- Defaul rendering for proposals -->
-{#snippet fallback_item(proposal: Proposal, mode?: string)}
-	{proposal.name} ({proposal.value})
+<!-- Defaul rendering for matches -->
+{#snippet fallback_item(match: Match, mode?: string)}
+	{match.name} ({match.value})
 {/snippet}
 
 <style>
@@ -375,7 +375,7 @@
 	.search_spinner {
 		padding-right: 0.25em;
 	}
-	#proposals {
+	#matches {
 		position: absolute;
 		z-index: 1;
 		top: 100%;
@@ -390,7 +390,7 @@
 			rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
 		background-color: #fff;
 	}
-	#proposals > li {
+	#matches > li {
 		padding: 0.5em;
 		border-bottom: solid 0.5px hsl(from currentColor h s 75%);
 		border-top: solid 0.5px hsl(from currentColor h s 95%);

@@ -1,11 +1,11 @@
 import ufuzzy from '@leeoniya/ufuzzy';
 
-import type { Proposal } from './types';
+import type { Match } from './types';
 
-interface Company extends Proposal {
+interface Company extends Match {
 	type: 'company';
 }
-interface Workload extends Proposal {
+interface Workload extends Match {
 	type: 'workload';
 	ref: Company;
 }

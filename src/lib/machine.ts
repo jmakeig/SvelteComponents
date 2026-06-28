@@ -1,12 +1,12 @@
 import { setup, assign, emit, createActor, fromPromise } from 'xstate';
 import type { Actor, PromiseActorLogic } from 'xstate';
-import type { Proposal } from './types.js';
+import type { Match } from './types.js';
 
 type Context = {
 	type_ahead: string;
-	matches: Proposal[]; // TODO: Make this generic, e.g. `T extends Proposal`
+	matches: Match[]; // TODO: Make this generic, e.g. `T extends Match`
 	selection: number | null;
-	value: Proposal | null;
+	value: Match | null;
 };
 
 type MachineEvent =
@@ -24,7 +24,7 @@ export const machine = setup({
 		context: Context;
 		events: MachineEvent;
 		emitted: EmittedEvent;
-		actors: { src: 'fetch_autocomplete'; logic: PromiseActorLogic<Proposal[], { search: string }> };
+		actors: { src: 'fetch_autocomplete'; logic: PromiseActorLogic<Match[], { search: string }> };
 		actions: { type: 'focus_input' };
 	},
 	actions: {
@@ -32,7 +32,7 @@ export const machine = setup({
 	},
 	actors: {
 		fetch_autocomplete: fromPromise(
-			async ({ input: { search: _ } }: { input: { search: string } }): Promise<Proposal[]> => {
+			async ({ input: { search: _ } }: { input: { search: string } }): Promise<Match[]> => {
 				throw new Error("shouldn't be reachable");
 			}
 		)
@@ -87,7 +87,7 @@ export const machine = setup({
 				},
 				searching: {
 					initial: 'debouncing',
-					entry: [assign({ matches: (): Proposal[] => [], selection: (): null => null })],
+					entry: [assign({ matches: (): Match[] => [], selection: (): null => null })],
 					states: {
 						debouncing: {
 							after: {
@@ -180,14 +180,14 @@ export const machine = setup({
 });
 
 export function create_actor(
-	get_matches: (query: string) => Promise<Proposal[]>,
+	get_matches: (query: string) => Promise<Match[]>,
 	focus_input: () => void
 ): Actor<typeof machine> {
 	return createActor(
 		machine.provide({
 			actors: {
 				fetch_autocomplete: fromPromise(
-					async ({ input: { search } }: { input: { search: string } }): Promise<Proposal[]> => {
+					async ({ input: { search } }: { input: { search: string } }): Promise<Match[]> => {
 						return get_matches(search);
 					}
 				)
