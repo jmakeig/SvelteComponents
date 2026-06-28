@@ -9,7 +9,7 @@
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check",
 		"format": "prettier --write .",
-		"kill": "pkill -f \"^npm run dev$\""
+		"kill": "pkill -f 'vite dev'"
 	},
 	"devDependencies": {
 		"@leeoniya/ufuzzy": "1.0.19",
