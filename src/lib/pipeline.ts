@@ -1,18 +1,20 @@
 import ufuzzy from '@leeoniya/ufuzzy';
 
-import type { Match } from './types';
+interface BaseEntity {
+	name: string;
+	label: string;
+	value: string;
+}
 
-interface Company extends Match {
+interface Customer extends BaseEntity {
 	type: 'company';
 }
-interface Workload extends Match {
+interface Workload extends BaseEntity {
 	type: 'workload';
-	ref: Company;
+	ref: Customer;
 }
 
-type Entity = Company | Workload;
-
-const ENTITIES: Array<Entity> = [
+const ENTITIES: Array<Customer | Workload> = [
 	{
 		type: 'company',
 		name: 'Northwind Analytics',
@@ -915,7 +917,11 @@ const ENTITIES: Array<Entity> = [
 	}
 ];
 
-async function search(list: Array<Entity>, input: string, limit = 10): Promise<Array<Entity>> {
+async function search(
+	list: Array<Customer | Workload>,
+	input: string,
+	limit = 10
+): Promise<Array<Customer | Workload>> {
 	if ('' === input) return [];
 
 	const options: ufuzzy.Options = { intraMode: 1 };

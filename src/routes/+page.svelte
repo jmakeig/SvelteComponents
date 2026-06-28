@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { get_colors } from '$lib/data.js';
-	import ComboBox from '$lib/ComboBox.svelte';
+	import ComboBox from '$lib/ComboBox/ComboBox.svelte';
 
 	import { match_entities } from '$lib/pipeline';
 </script>
@@ -47,7 +47,7 @@
 		<div class="contents">
 			<ComboBox name="color1" label="Color" search={get_colors}>
 				{#snippet item(match)}
-					<strong>{match.label}</strong> — {match.value}
+					<strong>{match.name}</strong> — {match.value}
 				{/snippet}
 			</ComboBox>
 		</div>
@@ -58,7 +58,7 @@
 		<div class="contents">
 			<ComboBox name="color2" label="Color" search={get_colors} disabled>
 				{#snippet item(match)}
-					<strong>{match.label}</strong> — {match.value}
+					<strong>{match.name}</strong> — {match.value}
 				{/snippet}
 			</ComboBox>
 		</div>
@@ -68,7 +68,7 @@
 		<div class="contents">
 			<ComboBox name="color2" label="Color" search={get_colors} readonly>
 				{#snippet item(match)}
-					<strong>{match.label}</strong> — {match.value}
+					<strong>{match.name}</strong> — {match.value}
 				{/snippet}
 			</ComboBox>
 		</div>
