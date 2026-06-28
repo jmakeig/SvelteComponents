@@ -8,7 +8,8 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"kill": "pkill -f \"^npm run dev$\""
 	},
 	"devDependencies": {
 		"@leeoniya/ufuzzy": "1.0.19",
