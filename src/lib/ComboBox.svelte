@@ -61,7 +61,7 @@
 		debug: _debug = false,
 		disabled: _disabled = false,
 		readonly: _readonly = false,
-		placeholder = name
+		placeholder = label
 	}: Props = $props();
 
 	const debug = $derived(true === _debug || 'true' === _debug),

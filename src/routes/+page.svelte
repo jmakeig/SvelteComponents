@@ -11,7 +11,7 @@
 		<div class="contents">
 			<ComboBox
 				name="customer-workload"
-				label="Customer or Workload"
+				label="Customer or workload"
 				search={match_entities}
 				debug="false"
 			>
