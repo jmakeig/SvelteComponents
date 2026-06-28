@@ -123,6 +123,9 @@
 	form {
 		width: 60%;
 	}
+	.item .icon {
+		vertical-align: middle;
+	}
 	.item .ref {
 		margin-bottom: 0.25em;
 		color: hsl(from currentColor h s 50%);
