@@ -1,6 +1,10 @@
 <script lang="ts">
-	import { applyAction, enhance } from '$app/forms';
 	import type { PageProps } from './$types';
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import type { MaybeInvalid } from '$lib/FormControl/validation';
+
+	import { applyAction, enhance } from '$app/forms';
+
 	import { get_colors } from '$lib/data.js';
 	import ComboBox from '$lib/ComboBox/ComboBox.svelte';
 	import FormControl from '$lib/FormControl/FormControl.svelte';
@@ -8,7 +12,46 @@
 	import { match_entities } from '$lib/pipeline';
 	import { is_invalid } from '$lib/FormControl/validation';
 
-	let { data, form }: PageProps = $props();
+	let { /*data,*/ form }: PageProps = $props();
+
+	function create_submit_enhance<Out, In>(
+		validate: (data: In) => MaybeInvalid<Out, In>,
+		unmarshal: (form_data: FormData) => In = (form_data) => Object.fromEntries(form_data) as In
+	): SubmitFunction {
+		return ({ formData, cancel }) => {
+			const pending = unmarshal(formData);
+			const result = validate(pending);
+			if (is_invalid(result)) {
+				applyAction({
+					type: 'failure',
+					status: 422,
+					data: { validation: result.validation, input: result.input }
+				});
+				cancel();
+			}
+		};
+	}
+
+	type Ref = string;
+
+	type Event = {
+		outcome: string;
+		happened_at: Date;
+	} & ({ customer: Ref; workload?: never } | { customer?: never; workload?: Ref });
+
+	type PendingEvent = {
+		customer_workload?: string | null;
+		outcome?: string | null;
+		happened_at?: Date | string | null;
+	};
+
+	function validate_event(event: PendingEvent): MaybeInvalid<PendingEvent, Event> {
+		throw new Error();
+	}
+
+	function unmarshal_event(form_data: FormData): PendingEvent {
+		return Object.fromEntries(form_data);
+	}
 </script>
 
 <form
@@ -16,21 +59,7 @@
 	method="post"
 	action="?/create"
 	class:invalid={form?.validation?.has()}
-	use:enhance={({ formData, cancel }) => {
-		const pending_entity = {
-			...Object.fromEntries(formData)
-		};
-		const entity = {}; //validate_pending_entity(pending_entity);
-		if (is_invalid(entity)) {
-			applyAction({
-				type: 'failure',
-				status: 422,
-				data: { validation: entity.validation, entity: pending_entity }
-			});
-			cancel();
-		}
-		return; // Inherit default update behavior
-	}}
+	use:enhance={create_submit_enhance(validate_event, unmarshal_event)}
 >
 	<FormControl
 		name="description"
