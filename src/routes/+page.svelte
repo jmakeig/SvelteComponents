@@ -1,11 +1,89 @@
 <script lang="ts">
+	import { applyAction, enhance } from '$app/forms';
+	import type { PageProps } from './$types';
 	import { get_colors } from '$lib/data.js';
 	import ComboBox from '$lib/ComboBox/ComboBox.svelte';
+	import FormControl from '$lib/FormControl/FormControl.svelte';
 
 	import { match_entities } from '$lib/pipeline';
+	import { is_invalid } from '$lib/FormControl/validation';
+
+	let { data, form }: PageProps = $props();
 </script>
 
-<form>
+<form
+	novalidate
+	method="post"
+	action="?/create"
+	class:invalid={form?.validation?.has()}
+	use:enhance={({ formData, cancel }) => {
+		const pending_entity = {
+			...Object.fromEntries(formData)
+		};
+		const entity = {}; //validate_pending_entity(pending_entity);
+		if (is_invalid(entity)) {
+			applyAction({
+				type: 'failure',
+				status: 422,
+				data: { validation: entity.validation, entity: pending_entity }
+			});
+			cancel();
+		}
+		return; // Inherit default update behavior
+	}}
+>
+	<FormControl
+		name="description"
+		value={'form?.exercise.description'}
+		label="Description"
+		validation={form?.validation}
+		help="A short summary"
+	>
+		{#snippet input(provided)}
+			<textarea {...provided}></textarea>
+		{/snippet}
+	</FormControl>
+	<FormControl
+		name="description"
+		value={'form?.exercise.description'}
+		label="Stuff"
+		validation={form?.validation}
+		help="A short summary"
+	>
+		{#snippet input(provided)}
+			<ComboBox
+				name="customer-workload2"
+				label="Customer or workload"
+				search={match_entities}
+				debug="false"
+			>
+				{#snippet item(match, mode)}
+					<div class="item">
+						{#if 'ref' in match && 'compact' !== mode}
+							<div class="ref">
+								{@render icon_customer()}
+								{match.ref.name}
+							</div>
+						{/if}
+						<div>
+							{#if 'company' === match.type}
+								{@render icon_customer()}
+							{:else if 'workload' === match.type}
+								{@render icon_workload()}
+							{/if}
+							{match.name}
+						</div>
+						{#if 'compact' !== mode}
+							<div class="meta">
+								Last updated by <span class="user">Alice</span> <span class="duration">2 days</span> ago
+							</div>
+						{/if}
+					</div>
+				{/snippet}
+			</ComboBox>
+		{/snippet}
+	</FormControl>
+
 	<div class="control">
 		<label for="customer-workload">Customer/Workload</label>
 		<div class="contents">
