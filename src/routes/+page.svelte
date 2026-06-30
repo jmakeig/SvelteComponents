@@ -12,7 +12,7 @@
 	import { match_entities } from '$lib/pipeline';
 	import { is_invalid } from '$lib/FormControl/validation';
 
-	let { /*data,*/ form }: PageProps = $props();
+	let { data, form }: PageProps = $props();
 
 	function create_submit_enhance<Out, In>(
 		validate: (data: In) => MaybeInvalid<Out, In>,
@@ -151,7 +151,7 @@
 	<div class="control">
 		<label for="color1">Color</label>
 		<div class="contents">
-			<ComboBox name="color1" label="Color" search={get_colors}>
+			<ComboBox name="color1" label="Color" search={get_colors} value={data.color1}>
 				{#snippet item(match)}
 					<strong>{match.name}</strong> — {match.value}
 				{/snippet}
@@ -162,7 +162,7 @@
 	<div class="control">
 		<label for="color2">Disabled</label>
 		<div class="contents">
-			<ComboBox name="color2" label="Color" search={get_colors} disabled>
+			<ComboBox name="color2" label="Color" search={get_colors} value={data.color2} disabled>
 				{#snippet item(match)}
 					<strong>{match.name}</strong> — {match.value}
 				{/snippet}
@@ -170,9 +170,9 @@
 		</div>
 	</div>
 	<div class="control">
-		<label for="color2">Read-only</label>
+		<label for="color3">Read-only</label>
 		<div class="contents">
-			<ComboBox name="color2" label="Color" search={get_colors} readonly>
+			<ComboBox name="color3" label="Color" search={get_colors} value={data.color3} readonly>
 				{#snippet item(match)}
 					<strong>{match.name}</strong> — {match.value}
 				{/snippet}

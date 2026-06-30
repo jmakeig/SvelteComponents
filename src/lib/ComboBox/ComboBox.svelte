@@ -73,7 +73,12 @@
 	const component_id = $props.id();
 
 	// svelte-ignore state_referenced_locally
-	const actor = create_actor(search, () => document.getElementById(name)?.focus(), 120).start();
+	const actor = create_actor(
+		search,
+		() => document.getElementById(name)?.focus(),
+		120,
+		value
+	).start();
 	let snap = $state(actor.getSnapshot());
 	let history = $state([] as Array<{ snapshot: SnapshotFrom<typeof actor>; timestamp: Date }>);
 
@@ -158,19 +163,20 @@
 >
 	{#if snap.matches('idle')}
 		<div class="field">
-			<div class="inputish">
+			<div class="inputish" aria-disabled={disabled} aria-readonly={readonly}>
 				{#if snap.context.value}
 					{@render item(snap.context.value, 'compact')}
 				{:else}
 					{placeholder}
 				{/if}
 			</div>
-			{#if !disabled && !readonly}
+			{#if !readonly}
 				<button
 					type="button"
-					title="Edit"
+					title={!disabled ? 'Edit' : 'Editing disabled'}
 					onclick={(evt) => actor.send({ type: 'activate' })}
 					class="action"
+					{disabled}
 				>
 					{@render icon_edit()}
 				</button>

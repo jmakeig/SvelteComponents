@@ -31,8 +31,10 @@ input[type='password']:disabled,
 textarea:disabled,
 select:disabled,
 button:disabled,
-fieldset:disabled {
+fieldset:disabled,
+.inputish[aria-disabled='true'] {
 	background: var(--color-input-disabled);
+	/* pointer-events: none; */
 }
 input[type='text']:read-only,
 input:not([type]):read-only,
@@ -41,7 +43,8 @@ input[type='password']:read-only,
 textarea:read-only,
 select:read-only,
 button:read-only,
-fieldset:read-only {
+fieldset:read-only,
+.inputish[aria-readonly='true'] {
 	background: var(--color-input-disabled);
 }
 /*

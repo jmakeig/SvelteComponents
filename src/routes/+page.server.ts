@@ -4,7 +4,18 @@ import { fail, redirect } from '@sveltejs/kit';
 
 export async function load() {
 	return {
-		//available_exercises: await list_exercises()
+		color1: {
+			value: 'steel_blue',
+			name: 'Steel Blue'
+		},
+		color2: {
+			value: 'olive',
+			name: 'Olive'
+		},
+		color3: {
+			value: 'brass',
+			name: 'Brass'
+		}
 	};
 }
 load satisfies PageServerLoad;

@@ -189,9 +189,9 @@ function create_machine<T extends Match>() {
 
 export function create_actor<T extends Match>(
 	get_matches: (query: string) => Promise<T[]>,
-	focus_input: () => void,
+	focus_input: () => void = () => {},
 	debounce = 200,
-	initial_value?: T | null
+	initial_value: T | null = null
 ) {
 	return createActor(
 		create_machine<T>().provide({
