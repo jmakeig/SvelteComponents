@@ -28,6 +28,7 @@ function create_machine<T extends Match>() {
 	return setup({
 		types: {} as {
 			context: Context;
+			input: { value?: T | null };
 			events: MachineEvent;
 			emitted: EmittedEvent;
 			actors: { src: 'fetch_autocomplete'; logic: PromiseActorLogic<T[], { search: string }> };
@@ -48,12 +49,12 @@ function create_machine<T extends Match>() {
 		delays: { debounce_delay: 0 }
 	}).createMachine({
 		id: 'combo_box',
-		context: {
-			type_ahead: '',
+		context: ({ input }) => ({
+			type_ahead: input.value?.name ?? '',
 			matches: [] as T[],
 			selection: null,
-			value: null
-		},
+			value: input.value ?? null
+		}),
 		initial: 'idle',
 		states: {
 			idle: {
@@ -190,7 +191,8 @@ function create_machine<T extends Match>() {
 export function create_actor<T extends Match>(
 	get_matches: (query: string) => Promise<T[]>,
 	focus_input: () => void,
-	debounce = 200
+	debounce = 200,
+	initial_value?: T | null
 ) {
 	return createActor(
 		create_machine<T>().provide({
@@ -203,6 +205,7 @@ export function create_actor<T extends Match>(
 			},
 			actions: { focus_input },
 			delays: { debounce_delay: debounce }
-		})
+		}),
+		{ input: { value: initial_value } }
 	);
 }

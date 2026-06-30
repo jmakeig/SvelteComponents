@@ -31,6 +31,7 @@
 		 */
 		name: string;
 		label: string;
+		value?: T; // TODO
 		/**
 		 * The implementation of the ansync search. Takes the typeahead text and
 		 * returns an array of matching matches. That’s generic so the consumer will
@@ -57,6 +58,7 @@
 	const {
 		name,
 		label,
+		value,
 		search,
 		item = fallback_item,
 		debug: _debug = false,
