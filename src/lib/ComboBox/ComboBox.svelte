@@ -89,7 +89,6 @@
 	function handle_keydown_select(evt: KeyboardEvent): void {
 		switch (evt.key) {
 			case 'ArrowDown':
-				console.log('arrow down, yo!');
 				actor.send({
 					type: 'select',
 					selection: Math.min(
@@ -111,7 +110,7 @@
 				actor.send({ type: 'deactivate' });
 				break;
 			default:
-			// console.log(evt.key);
+				void 0;
 		}
 	}
 

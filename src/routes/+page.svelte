@@ -112,8 +112,7 @@
 		{/snippet}
 	</FormControl>
 
-	/*
-	<div class="control">
+	<!-- <div class="control">
 		<label for="customer-workload">Customer/Workload</label>
 		<div class="contents">
 			<ComboBox
@@ -147,8 +146,7 @@
 				{/snippet}
 			</ComboBox>
 		</div>
-	</div>
-	*/
+	</div> -->
 
 	<div class="control">
 		<label for="color1">Color</label>
