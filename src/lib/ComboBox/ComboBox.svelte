@@ -53,6 +53,7 @@
 		disabled?: Booleanish;
 		readonly?: Booleanish;
 		placeholder?: string;
+		onselect?: (event: { value: T }) => void;
 	}
 
 	const {
@@ -64,7 +65,8 @@
 		debug: _debug = false,
 		disabled: _disabled = false,
 		readonly: _readonly = false,
-		placeholder = label
+		placeholder = label,
+		onselect = () => {}
 	}: Props = $props();
 
 	const debug = $derived(true === _debug || 'true' === _debug),
@@ -89,7 +91,7 @@
 			history = [{ snapshot, timestamp: new Date() }, ...history];
 		}
 	});
-	actor.on('selected', (evt) => console.log('selected', evt));
+	actor.on('selected', (evt) => onselect(evt));
 
 	function handle_keydown_select(evt: KeyboardEvent): void {
 		switch (evt.key) {

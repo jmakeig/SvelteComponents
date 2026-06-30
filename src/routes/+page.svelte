@@ -151,7 +151,13 @@
 	<div class="control">
 		<label for="color1">Color</label>
 		<div class="contents">
-			<ComboBox name="color1" label="Color" search={get_colors} value={data.color1}>
+			<ComboBox
+				name="color1"
+				label="Color"
+				search={get_colors}
+				value={data.color1}
+				onselect={(evt) => console.log(evt)}
+			>
 				{#snippet item(match)}
 					<strong>{match.name}</strong> — {match.value}
 				{/snippet}

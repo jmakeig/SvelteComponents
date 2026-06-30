@@ -15,7 +15,7 @@ type MachineEvent =
 	| { type: 'select'; selection: number }
 	| { type: 'commit' };
 
-type EmittedEvent = { type: 'selected'; value: string };
+type EmittedEvent<T> = { type: 'selected'; value: T };
 
 function create_machine<T extends Match>() {
 	type Context = {
@@ -30,7 +30,7 @@ function create_machine<T extends Match>() {
 			context: Context;
 			input: { value?: T | null };
 			events: MachineEvent;
-			emitted: EmittedEvent;
+			emitted: EmittedEvent<T>;
 			actors: { src: 'fetch_autocomplete'; logic: PromiseActorLogic<T[], { search: string }> };
 			actions: { type: 'focus_input' };
 		},
@@ -149,9 +149,7 @@ function create_machine<T extends Match>() {
 						}
 					},
 					committed: {
-						entry: [
-							emit(({ context }) => ({ type: 'selected' as const, value: context.value!.value }))
-						]
+						entry: [emit(({ context }) => ({ type: 'selected' as const, value: context.value! }))]
 					},
 					error: {}
 				},
