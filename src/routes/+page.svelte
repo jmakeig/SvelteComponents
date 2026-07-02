@@ -72,19 +72,14 @@
 		{/snippet}
 	</FormControl>
 	<FormControl
-		name="description"
+		name="customer-workload2"
 		value={'form?.customer_workload'}
 		label="Stuff"
 		validation={form?.validation}
-		help="A short summary"
+		help="The customer or workload"
 	>
-		{#snippet input(provided)}
-			<ComboBox
-				name="customer-workload2"
-				label="Customer or workload"
-				search={match_entities}
-				debug="false"
-			>
+		{#snippet input({ name })}
+			<ComboBox {name} label="Customer or workload" search={match_entities} debug="false">
 				{#snippet item(match, mode)}
 					<div class="item">
 						{#if 'ref' in match && 'compact' !== mode}
@@ -233,7 +228,7 @@
 
 <style>
 	form {
-		width: 60%;
+		width: 85%;
 	}
 	.item .icon {
 		vertical-align: middle;

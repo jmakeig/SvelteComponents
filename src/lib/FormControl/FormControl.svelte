@@ -4,6 +4,10 @@
 	import { createAttachmentKey } from 'svelte/attachments';
 	import { Validation } from './validation.js';
 
+	interface ProvidedAttrs {
+		name: string;
+		[key: string]: unknown;
+	}
 	interface Props {
 		name: string;
 		id?: string;
@@ -11,7 +15,7 @@
 		validation?: Validation<unknown>;
 		value?: unknown;
 		help?: string;
-		input?: Snippet<[Record<string, unknown>]>;
+		input?: Snippet<[ProvidedAttrs]>;
 		[key: string]: unknown;
 	}
 
@@ -33,6 +37,7 @@
 		value = $bindable(),
 		help,
 		input,
+		/** Any other properties passed in */
 		...other
 	}: Props = $props();
 

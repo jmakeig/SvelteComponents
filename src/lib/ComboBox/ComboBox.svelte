@@ -53,6 +53,11 @@
 		disabled?: Booleanish;
 		readonly?: Booleanish;
 		placeholder?: string;
+		/**
+		 * Callback when a selected value is commited. This value is stored in the
+		 * hidden input that is submitted under the `name` property.
+		 * @param event At least the typed `Match` instance. Confusingly this has a `value` property itself.
+		 */
 		onselect?: (event: { value: T }) => void;
 	}
 
@@ -72,6 +77,7 @@
 	const debug = $derived(true === _debug || 'true' === _debug),
 		disabled = $derived(true === _disabled || 'true' === _disabled),
 		readonly = $derived(true === _readonly || 'true' === _readonly);
+	/** Identifier that’s uniuqe to the component instance */
 	const component_id = $props.id();
 
 	// svelte-ignore state_referenced_locally
@@ -194,10 +200,10 @@
 				aria-autocomplete="list"
 				aria-haspopup="listbox"
 				aria-activedescendant={null !== snap.context.selection
-					? 'match_' + String(snap.context.selection)
+					? [component_id, 'match', String(snap.context.selection)].join('_')
 					: undefined}
 				aria-expanded={snap.matches({ active: 'proposing' })}
-				aria-controls={name + 'matches-' + component_id}
+				aria-controls={[component_id, 'matches'].join('_')}
 				value={snap.context.type_ahead}
 				onfocus={(evt) => actor.send({ type: 'activate' })}
 				oninput={(evt) =>
@@ -233,7 +239,7 @@
 				</button>
 			{/if}
 			<ol
-				id={name + 'matches-' + component_id}
+				id={[component_id, 'matches'].join('_')}
 				role="listbox"
 				aria-label="Items"
 				class="listbox"
@@ -243,7 +249,7 @@
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<li
 						role="option"
-						id={'match_' + String(i)}
+						id={[component_id, 'match', String(i)].join('_')}
 						aria-selected={i === snap.context.selection}
 						onclick={create_handle_click_select(i)}
 						class="interactive"
