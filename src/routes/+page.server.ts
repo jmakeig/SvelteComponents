@@ -1,4 +1,4 @@
-import { is_invalid } from '$lib/FormControl/validation';
+import { is_invalid } from '$components/FormControl/validation';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 

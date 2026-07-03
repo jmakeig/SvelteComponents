@@ -1,16 +1,16 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import type { MaybeInvalid } from '$lib/FormControl/validation';
+	import type { MaybeInvalid } from '$components/FormControl/validation';
 
 	import { applyAction, enhance } from '$app/forms';
 
 	import { get_colors } from '$lib/data.js';
-	import ComboBox from '$lib/ComboBox/ComboBox.svelte';
-	import FormControl from '$lib/FormControl/FormControl.svelte';
+	import ComboBox from '$components/ComboBox/ComboBox.svelte';
+	import FormControl from '$components/FormControl/FormControl.svelte';
 
 	import { match_entities } from '$lib/pipeline';
-	import { is_invalid } from '$lib/FormControl/validation';
+	import { is_invalid } from '$components/FormControl/validation';
 
 	let { data, form }: PageProps = $props();
 

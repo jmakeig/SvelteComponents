@@ -120,3 +120,15 @@ export function is_invalid<In, Out, Prop extends string = 'input'>(
 		result.validation instanceof Validation
 	);
 }
+
+/************************/
+
+export function is_date(value: string): boolean {
+	// 1. Check the syntax structure (YYYY-MM-DDTHH:mm:ss.sssZ)
+	const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
+	if (!isoRegex.test(value)) return false;
+
+	// 2. Check if it is a real calendar date
+	const date = new Date(value);
+	return !isNaN(date.getTime()) && date.toISOString() === value;
+}

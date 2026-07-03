@@ -19,10 +19,13 @@
 		[key: string]: unknown;
 	}
 
+	/**
+	 * Used for the default tranlation from a name to a label.
+	 */
 	function title_case(str: string): string {
 		return str
 			.toLowerCase()
-			.split(' ')
+			.split(/[\s_]/)
 			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
 			.join(' ');
 	}
@@ -65,7 +68,7 @@
 </script>
 
 <div class="control">
-	<label for={name}>{label}{label ? ':' : ''}</label>
+	<label for={name}>{label}</label>
 	<div class="contents">
 		{#if input}
 			{@render input({
