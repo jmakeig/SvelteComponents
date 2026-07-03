@@ -101,6 +101,14 @@ export type PendingEvent = Partial<{
 	entity: Optional<Ref<'customer' | 'workload'>>;
 }>;
 
+/*
+function asserts_pending_customer(value: unknown): asserts value is PendingCustomer {
+	//throw new Error('Unimplemented');
+	if (undefined === value || null === value) throw new TypeError();
+	if ('object' !== typeof value) throw new TypeError();
+}
+*/
+
 /**********************************************************************/
 {
 	const pe0: PendingEvent = {
