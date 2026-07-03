@@ -123,7 +123,7 @@ export type PendingEvent = Partial<{
 		}
 	};
 	const pe2: PendingEvent = {
-		id: 'asdf',
+		event: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
 		// @ts-expect-error
 		outcome: 44,
 		happened_at: new Date(),
@@ -133,7 +133,7 @@ export type PendingEvent = Partial<{
 		}
 	};
 	const pe3: PendingEvent = {};
-	// @ts-expect-error
+	// @ts-expect-error Missing properties
 	const e1: Event = {};
 	const e2: Event = {
 		event: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
@@ -143,6 +143,16 @@ export type PendingEvent = Partial<{
 			customer: 'CCCC-CCCC-CCCC-CCCC-CCCC' as ID,
 			name: 'Northwind Analytics',
 			label: 'northwind_analytics'
+		}
+	};
+	const pe4: PendingEvent = {
+		// @ts-expect-error Unknown property
+		id: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
+		outcome: null,
+		happened_at: new Date(),
+		entity: {
+			_type: 'workload',
+			_id: 'WWWW-WWWW-WWWWW-WWWW-WWWW' as ID
 		}
 	};
 	const e3: Event = {
