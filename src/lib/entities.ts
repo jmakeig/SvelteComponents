@@ -1,3 +1,5 @@
+import { Validation, type MaybeInvalid } from '$components/FormControl/validation';
+
 type Optional<T> = T | null;
 type Pending<T> = Optional<T | string>;
 
@@ -103,14 +105,49 @@ export type PendingEvent = Partial<{
 	entity: Optional<Ref<'customer' | 'workload'>>;
 }>;
 
-/*
-function asserts_pending_customer(value: unknown): asserts value is PendingCustomer {
-	//throw new Error('Unimplemented');
-	if (undefined === value || null === value) throw new TypeError();
-	if ('object' !== typeof value) throw new TypeError();
+export function validate_event(pending: unknown, is_new: boolean = false): MaybeInvalid<Event> {
+	const validation = new Validation<Event>();
+	// @ts-expect-error Clever or evil?
+	const event: Event = {};
+	if (undefined === pending || null === pending || 'object' !== typeof pending) {
+		validation.add('Event must exist');
+	} else {
+		if (is_new) {
+			//
+		} else {
+			if ('event' in pending && 'string' === typeof pending.event) {
+				event.event = pending.event as ID;
+			} else {
+				validation.add('Unknown event', 'event');
+			}
+			if ('happened_at' in pending) {
+				if (pending.happened_at instanceof Date) event.happened_at;
+				else if ('string' === typeof pending.happened_at) {
+					event.happened_at = new Date(Date.parse(pending.happened_at));
+				} else {
+					validation.add('Invalid date', 'happened_at');
+				}
+			} else {
+				validation.add('Date required', 'happened_at');
+			}
+		}
+		if ('outcome' in pending && 'string' === typeof pending.outcome) {
+			if (pending.outcome.trim().length < 3) {
+				validation.add('Outcome must be at least 3 characters', 'outcome');
+			} else {
+				event.outcome = pending.outcome.trim();
+			}
+		}
+	}
+	console.log('validate_event', pending, event, validation.length);
+	if (validation.has()) {
+		return {
+			validation,
+			input: pending
+		};
+	}
+	return event;
 }
-*/
-
 /**********************************************************************/
 {
 	const pe0: PendingEvent = {
