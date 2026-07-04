@@ -10,13 +10,14 @@ export interface Issue {
  * the input property is in the `Prop` property, defaulting to `'input'`.
  * Use `is_invalid()` to test for an `Invalid` instance.
  */
-export type Invalid<In, Out, Prop extends string = 'input'> = {
+export type Invalid<Out> = {
 	readonly validation: Validation<Out>;
 } & {
-	readonly [property in Prop]: In;
+	//readonly [property in Prop]: In;
+	readonly input: unknown;
 };
 
-export type MaybeInvalid<In, Out, Prop extends string = 'input'> = Out | Invalid<In, Out, Prop>;
+export type MaybeInvalid<Out> = Out | Invalid<Out>;
 
 export class Validation<Out> {
 	#issues: Issue[] = [];
@@ -65,7 +66,7 @@ export class Validation<Out> {
 
 	collect<In, Out>(
 		collection: Array<In>,
-		validate: (item: In) => MaybeInvalid<In, Out>,
+		validate: (item: In) => MaybeInvalid<Out>,
 		base_path: Path = []
 	): Array<In | Out> {
 		let dirty = false;
@@ -110,9 +111,7 @@ export class Validation<Out> {
 	}
 }
 
-export function is_invalid<In, Out, Prop extends string = 'input'>(
-	result: MaybeInvalid<In, Out, Prop>
-): result is Invalid<In, Out, Prop> {
+export function is_invalid<Out>(result: MaybeInvalid<Out>): result is Invalid<Out> {
 	return (
 		'object' === typeof result &&
 		null !== result &&

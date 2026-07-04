@@ -14,9 +14,9 @@
 
 	let { data, form }: PageProps = $props();
 
-	function create_submit_enhance<Out, In>(
-		validate: (data: In) => MaybeInvalid<Out, In>,
-		unmarshal: (form_data: FormData) => In = (form_data) => Object.fromEntries(form_data) as In
+	function create_submit_enhance<Out>(
+		validate: (data: unknown) => MaybeInvalid<Out>,
+		unmarshal: (form_data: FormData) => unknown = (form_data) => Object.fromEntries(form_data)
 	): SubmitFunction {
 		return ({ formData, cancel }) => {
 			const result = validate(unmarshal(formData));
@@ -44,7 +44,7 @@
 		happened_at?: Date | string | null;
 	};
 
-	function validate_event(event: PendingEvent): MaybeInvalid<PendingEvent, Event> {
+	function validate_event(event: unknown): MaybeInvalid<Event> {
 		throw new Error();
 	}
 

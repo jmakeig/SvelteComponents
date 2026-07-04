@@ -32,7 +32,7 @@ type Entity<Name extends string> = {
 	 */
 	label: string;
 	/**
-	 * What the user would colloqially refer to the entity as. Unlike `ID`s or `label`s,
+	 * What the user would colloqially refer to the entity as. Unlike `ID` or `label`,
 	 * names are _not_ unique.
 	 */
 	name: string;
@@ -85,9 +85,11 @@ type BaseEvent = {
 };
 type CustomerEvent = BaseEvent & {
 	customer: Entity<'customer'>;
+	workload?: never;
 };
 type WorkloadEvent = BaseEvent & {
 	workload: Entity<'workload'>;
+	customer?: never;
 };
 export type Event = CustomerEvent | WorkloadEvent;
 
@@ -141,6 +143,26 @@ function asserts_pending_customer(value: unknown): asserts value is PendingCusto
 		}
 	};
 	const pe3: PendingEvent = {};
+	const pe4: PendingEvent = {
+		// @ts-expect-error Unknown property
+		id: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
+		outcome: null,
+		happened_at: new Date(),
+		entity: {
+			_type: 'workload',
+			_id: 'WWWW-WWWW-WWWWW-WWWW-WWWW' as ID
+		}
+	};
+	const e0: Event = {
+		event: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
+		outcome: 'some stuff',
+		happened_at: new Date(),
+		customer: {
+			customer: 'CCCC-CCCC-CCCC-CCCC-CCCC' as ID,
+			name: 'Northwind Analytics',
+			label: 'northwind_analytics'
+		}
+	};
 	// @ts-expect-error Missing properties
 	const e1: Event = {};
 	const e2: Event = {
@@ -153,27 +175,7 @@ function asserts_pending_customer(value: unknown): asserts value is PendingCusto
 			label: 'northwind_analytics'
 		}
 	};
-	const pe4: PendingEvent = {
-		// @ts-expect-error Unknown property
-		id: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
-		outcome: null,
-		happened_at: new Date(),
-		entity: {
-			_type: 'workload',
-			_id: 'WWWW-WWWW-WWWWW-WWWW-WWWW' as ID
-		}
-	};
 	const e3: Event = {
-		event: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
-		outcome: 'some stuff',
-		happened_at: new Date(),
-		customer: {
-			customer: 'CCCC-CCCC-CCCC-CCCC-CCCC' as ID,
-			name: 'Northwind Analytics',
-			label: 'northwind_analytics'
-		}
-	};
-	const e4: Event = {
 		event: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
 		outcome: 'some stuff',
 		happened_at: new Date(),
@@ -184,5 +186,21 @@ function asserts_pending_customer(value: unknown): asserts value is PendingCusto
 			// @ts-expect-error
 			segment: 'select' // even valid entity property isn’t supported on FKs
 		}
+	};
+	// @ts-expect-error One of customer or workload, not both
+	const e4: Event = {
+		event: 'eeee-eeee-eeee-eeee-0001' as ID,
+		customer: {
+			customer: 'cccc-cccc-ccccc-cccc-0001' as ID,
+			label: '',
+			name: ''
+		},
+		workload: {
+			workload: 'cccc-cccc-ccccc-cccc-0001' as ID,
+			label: '',
+			name: ''
+		},
+		outcome: 'Some stuff was discussed. Here are next steps.',
+		happened_at: new Date()
 	};
 }
