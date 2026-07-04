@@ -1,7 +1,35 @@
+<script lang="ts" module>
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import { applyAction } from '$app/forms';
+	import { is_invalid, type MaybeInvalid } from './validation';
+
+	/**
+	 * Creates a handler for `use:enhance`.
+	 * @usage ```
+	 *	use:enhance={create_submit_enhance<ENTITY>(validate_ENTITY)}
+	 * ```
+	 */
+	export function create_submit_enhance<Out>(
+		validate: (data: unknown) => MaybeInvalid<Out>,
+		unmarshal: (form_data: FormData) => unknown = (form_data) => Object.fromEntries(form_data)
+	): SubmitFunction {
+		return ({ formData, cancel }) => {
+			const result = validate(unmarshal(formData));
+			if (is_invalid(result)) {
+				applyAction({
+					type: 'failure',
+					status: 422,
+					data: result
+				});
+				cancel();
+			}
+		};
+	}
+</script>
+
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import type { Attachment } from 'svelte/attachments';
-	import { createAttachmentKey } from 'svelte/attachments';
+	import { type Attachment, createAttachmentKey } from 'svelte/attachments';
 	import { Validation } from './validation.js';
 
 	interface ProvidedAttrs {
