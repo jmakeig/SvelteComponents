@@ -5,7 +5,17 @@
 	import FormControl from '$components/FormControl/FormControl.svelte';
 	import { create_submit_enhance } from '$components/FormControl/FormControl.svelte';
 
-	const { /*data,*/ form }: PageProps = $props();
+	const { data, form }: PageProps = $props();
+
+	type Loosey<T> = T | string | null | undefined;
+
+	function to_iso_date(value: Loosey<Date>): Loosey<string> {
+		if (value instanceof Date) return value.toISOString().slice(0, 10);
+		return value;
+	}
+
+	/** Instantiates an in-progress entity from the form submission or falling back to the loaded `data`.*/
+	let event: PendingEvent = $derived(form?.data ?? data);
 </script>
 
 <h1>Event</h1>
@@ -15,23 +25,25 @@
 	action="?/new"
 	novalidate
 	class:invalid={form?.validation.has()}
-	use:enhance={create_submit_enhance<Event, PendingEvent>((data: unknown) =>
-		validate_event(data as PendingEvent, true)
+	use:enhance={create_submit_enhance<Event, PendingEvent>((value: unknown) =>
+		validate_event(value as PendingEvent, true)
 	)}
 >
 	<FormControl name="customer-workload" value={undefined} validation={form?.validation} />
-	<FormControl name="outcome" value={form?.data?.outcome} validation={form?.validation}>
+	<FormControl name="outcome" value={event.outcome} validation={form?.validation}>
 		{#snippet input(provided)}
 			<textarea {...provided}></textarea>
 		{/snippet}
 	</FormControl>
 	<FormControl
 		name="happened_at"
-		value={form?.data?.happened_at instanceof Date
-			? form.data.happened_at.toISOString()
-			: form?.data?.happened_at}
+		value={to_iso_date(event.happened_at)}
 		validation={form?.validation}
-	/>
+	>
+		{#snippet input(provided)}
+			<input type="date" {...provided} />
+		{/snippet}
+	</FormControl>
 	<div class="control actions">
 		<button class="default">Create</button>
 	</div>

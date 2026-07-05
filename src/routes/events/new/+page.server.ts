@@ -1,5 +1,13 @@
 import type { PageServerLoad, Actions } from './$types';
+import type { PendingEvent } from '$lib/entities';
 import * as api from '$lib/server/api';
+
+export const load = (() => {
+	const defaults: PendingEvent = {
+		happened_at: new Date()
+	};
+	return defaults;
+}) satisfies PageServerLoad;
 
 export const actions = {
 	new: async ({ request }) => {
