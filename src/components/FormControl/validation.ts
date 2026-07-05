@@ -6,18 +6,15 @@ export interface Issue {
 }
 
 /**
- * An invalid response. The validation results are in the `'validation'` key and
- * the input property is in the `Prop` property, defaulting to `'input'`.
- * Use `is_invalid()` to test for an `Invalid` instance.
+ * The result of validating something. `data` always holds the current field
+ * values — whatever was submitted, valid or not — so consumers never need to
+ * reconcile a "success" shape against a separate "failure" shape. `validation`
+ * is empty when `data` is actually valid; check `validation.has()` (or `.is_valid()`).
  */
-export type Invalid<Out> = {
+export type Validated<Out, Pending = Out> = {
+	readonly data: Pending;
 	readonly validation: Validation<Out>;
-} & {
-	//readonly [property in Prop]: In;
-	readonly input: unknown;
 };
-
-export type MaybeInvalid<Out> = Out | Invalid<Out>;
 
 export class Validation<Out> {
 	#issues: Issue[] = [];
@@ -66,18 +63,18 @@ export class Validation<Out> {
 
 	collect<In, Out>(
 		collection: Array<In>,
-		validate: (item: In) => MaybeInvalid<Out>,
+		validate: (item: In) => Validated<Out, In>,
 		base_path: Path = []
 	): Array<In | Out> {
 		let dirty = false;
 		const output = collection.map((item, index) => {
 			const result = validate(item);
-			if (is_invalid(result)) {
+			if (result.validation.has()) {
 				dirty = true;
 				this.merge(result.validation, [...base_path, index]);
 				return item;
 			}
-			return result;
+			return result.data as unknown as Out;
 		});
 		if (dirty) return collection;
 		return output;
@@ -109,15 +106,6 @@ export class Validation<Out> {
 			.map((issue) => `${issue.message} (${issue.path ? issue.path.join(' > ') : ''})`)
 			.join('\n');
 	}
-}
-
-export function is_invalid<Out>(result: MaybeInvalid<Out>): result is Invalid<Out> {
-	return (
-		'object' === typeof result &&
-		null !== result &&
-		'validation' in result &&
-		result.validation instanceof Validation
-	);
 }
 
 /************************/

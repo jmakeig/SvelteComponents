@@ -1,7 +1,7 @@
 <script lang="ts" module>
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { applyAction } from '$app/forms';
-	import { is_invalid, type MaybeInvalid } from './validation';
+	import { type Validated } from './validation';
 
 	/**
 	 * Creates a handler for `use:enhance`.
@@ -9,13 +9,13 @@
 	 *	use:enhance={create_submit_enhance<ENTITY>(validate_ENTITY)}
 	 * ```
 	 */
-	export function create_submit_enhance<Out>(
-		validate: (data: unknown) => MaybeInvalid<Out>,
+	export function create_submit_enhance<Out, In = unknown>(
+		validate: (data: unknown) => Validated<Out, In>,
 		unmarshal: (form_data: FormData) => unknown = (form_data) => Object.fromEntries(form_data)
 	): SubmitFunction {
 		return ({ formData, cancel }) => {
 			const result = validate(unmarshal(formData));
-			if (is_invalid(result)) {
+			if (result.validation.has()) {
 				applyAction({
 					type: 'failure',
 					status: 422,

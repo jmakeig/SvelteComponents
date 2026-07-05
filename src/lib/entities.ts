@@ -1,4 +1,4 @@
-import { Validation, type MaybeInvalid } from '$components/FormControl/validation';
+import { Validation, type Validated } from '$components/FormControl/validation';
 
 type Optional<T> = T | null;
 type Pending<T> = Optional<T | string>;
@@ -105,29 +105,32 @@ export type PendingEvent = Partial<{
 	entity: Optional<Ref<'customer' | 'workload'>>;
 }>;
 
-export function validate_event(pending: unknown, is_new: boolean = false): MaybeInvalid<Event> {
+export function validate_event(
+	pending: PendingEvent,
+	is_new: boolean = false
+): Validated<Event, PendingEvent> {
 	const validation = new Validation<Event>();
 	// @ts-expect-error Clever or evil?
 	const event: Event = {};
 	if (undefined === pending || null === pending || 'object' !== typeof pending) {
 		validation.add('Event must exist');
 	} else {
-		if (is_new) {
-			//
+		if ('event' in pending && 'string' === typeof pending.event) {
+			event.event = pending.event as ID;
 		} else {
-			if ('event' in pending && 'string' === typeof pending.event) {
-				event.event = pending.event as ID;
-			} else {
+			if (!is_new) {
 				validation.add('Unknown event', 'event');
 			}
-			if ('happened_at' in pending) {
-				if (pending.happened_at instanceof Date) event.happened_at;
-				else if ('string' === typeof pending.happened_at) {
-					event.happened_at = new Date(Date.parse(pending.happened_at));
-				} else {
-					validation.add('Invalid date', 'happened_at');
-				}
+		}
+		if ('happened_at' in pending) {
+			if (pending.happened_at instanceof Date) event.happened_at = pending.happened_at;
+			else if ('string' === typeof pending.happened_at) {
+				event.happened_at = new Date(Date.parse(pending.happened_at));
 			} else {
+				validation.add('Invalid date', 'happened_at');
+			}
+		} else {
+			if (!is_new) {
 				validation.add('Date required', 'happened_at');
 			}
 		}
@@ -141,12 +144,9 @@ export function validate_event(pending: unknown, is_new: boolean = false): Maybe
 	}
 	console.log('validate_event', pending, event, validation.length);
 	if (validation.has()) {
-		return {
-			validation,
-			input: pending
-		};
+		return { data: pending, validation };
 	}
-	return event;
+	return { data: event, validation };
 }
 /**********************************************************************/
 {

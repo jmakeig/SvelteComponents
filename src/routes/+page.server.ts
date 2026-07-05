@@ -1,4 +1,3 @@
-import { is_invalid } from '$components/FormControl/validation';
 import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 
@@ -31,9 +30,9 @@ export const actions: Actions = {
 			alternatives: form_data.getAll('alternatives').map((v) => v.toString())
 		};
 
-		const result = await {}; //create_exercise(pending);
+		const result: any = await {}; //create_exercise(pending);
 
-		if (is_invalid(result)) {
+		if (result?.validation?.has()) {
 			return fail(422, {
 				exercise: result,
 				validation: result.validation

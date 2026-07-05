@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import type { MaybeInvalid } from '$components/FormControl/validation';
+	import type { Validated } from '$components/FormControl/validation';
 
 	import { applyAction, enhance } from '$app/forms';
 
@@ -10,21 +10,20 @@
 	import FormControl from '$components/FormControl/FormControl.svelte';
 
 	import { match_entities } from '$lib/pipeline';
-	import { is_invalid } from '$components/FormControl/validation';
 
 	let { data, form }: PageProps = $props();
 
-	function create_submit_enhance<Out>(
-		validate: (data: unknown) => MaybeInvalid<Out>,
+	function create_submit_enhance<Out, In = unknown>(
+		validate: (data: unknown) => Validated<Out, In>,
 		unmarshal: (form_data: FormData) => unknown = (form_data) => Object.fromEntries(form_data)
 	): SubmitFunction {
 		return ({ formData, cancel }) => {
 			const result = validate(unmarshal(formData));
-			if (is_invalid(result)) {
+			if (result.validation.has()) {
 				applyAction({
 					type: 'failure',
 					status: 422,
-					data: result //{ validation: result.validation, input: result.input }
+					data: result
 				});
 				cancel();
 			}
@@ -44,7 +43,7 @@
 		happened_at?: Date | string | null;
 	};
 
-	function validate_event(event: unknown): MaybeInvalid<Event> {
+	function validate_event(event: unknown): Validated<Event, PendingEvent> {
 		throw new Error();
 	}
 
@@ -56,7 +55,7 @@
 <form
 	method="post"
 	action="?/create"
-	class:invalid={form?.validation?.has()}
+	class:invalid={form?.validation.has()}
 	novalidate
 	use:enhance={create_submit_enhance(validate_event, unmarshal_event)}
 >
