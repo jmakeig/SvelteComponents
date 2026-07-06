@@ -105,6 +105,27 @@ export type PendingEvent = Partial<{
 	entity: Optional<Ref<'customer' | 'workload'>>;
 }>;
 
+/**
+ * TODO: Oof. This will be different on the client and the server because of locales.
+ *
+ * @param iso_date
+ * @returns `Date` or `new Date(NaN)` for invalid dates
+ */
+function parse_date_local(iso_date: string): Date {
+	const regex = /^\d{4}-\d{2}-\d{2}$/;
+	if (!regex.test(iso_date)) {
+		return new Date(NaN);
+	}
+	const [year, month, day] = iso_date.split('-').map((part) => parseInt(part, 10));
+	const local = new Date(year, month - 1, day);
+
+	if (isNaN(local.getTime())) {
+		return new Date(NaN);
+	}
+
+	return local;
+}
+
 export function validate_event(
 	pending: PendingEvent,
 	is_new: boolean = false
@@ -125,7 +146,7 @@ export function validate_event(
 		if ('happened_at' in pending) {
 			if (pending.happened_at instanceof Date) event.happened_at = pending.happened_at;
 			else if ('string' === typeof pending.happened_at) {
-				event.happened_at = new Date(Date.parse(pending.happened_at));
+				event.happened_at = parse_date_local(pending.happened_at);
 			} else {
 				validation.add('Invalid date', 'happened_at');
 			}
@@ -142,11 +163,11 @@ export function validate_event(
 			}
 		}
 	}
-	console.log('validate_event', pending, event, validation.length);
+	// console.log('validate_event', pending, event, validation.length);
 	if (validation.has()) {
 		return { data: pending, validation };
 	}
-	return { data: event, validation };
+	return { data: event };
 }
 /**********************************************************************/
 {

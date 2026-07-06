@@ -3,10 +3,9 @@ import type { PendingEvent } from '$lib/entities';
 import * as api from '$lib/server/api';
 
 export const load = (() => {
-	const defaults: PendingEvent = {
+	return {
 		happened_at: new Date()
 	};
-	return defaults;
 }) satisfies PageServerLoad;
 
 export const actions = {

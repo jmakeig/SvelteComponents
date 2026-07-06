@@ -15,7 +15,7 @@
 	): SubmitFunction {
 		return ({ formData, cancel }) => {
 			const result = validate(unmarshal(formData));
-			if (result.validation.has()) {
+			if (result.validation) {
 				applyAction({
 					type: 'failure',
 					status: 422,

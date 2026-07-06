@@ -11,10 +11,9 @@ export interface Issue {
  * reconcile a "success" shape against a separate "failure" shape. `validation`
  * is empty when `data` is actually valid; check `validation.has()` (or `.is_valid()`).
  */
-export type Validated<Out, Pending = Out> = {
-	readonly data: Pending;
-	readonly validation: Validation<Out>;
-};
+export type Validated<Out, Pending = Out> =
+	| { readonly data: Out; readonly validation?: never }
+	| { readonly data: Pending; readonly validation: Validation<Out> };
 
 export class Validation<Out> {
 	#issues: Issue[] = [];
@@ -27,7 +26,7 @@ export class Validation<Out> {
 		return this;
 	}
 
-	merge(validation: Validation<unknown>, base_path: Path = []): Validation<Out> {
+	merge(validation: Validation<Out>, base_path: Path = []): Validation<Out> {
 		for (const issue of validation) {
 			this.#issues.push({
 				message: issue.message,
@@ -69,12 +68,12 @@ export class Validation<Out> {
 		let dirty = false;
 		const output = collection.map((item, index) => {
 			const result = validate(item);
-			if (result.validation.has()) {
+			if (result.validation) {
 				dirty = true;
 				this.merge(result.validation, [...base_path, index]);
 				return item;
 			}
-			return result.data as unknown as Out;
+			return result.data;
 		});
 		if (dirty) return collection;
 		return output;

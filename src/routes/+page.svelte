@@ -19,7 +19,7 @@
 	): SubmitFunction {
 		return ({ formData, cancel }) => {
 			const result = validate(unmarshal(formData));
-			if (result.validation.has()) {
+			if (result.validation) {
 				applyAction({
 					type: 'failure',
 					status: 422,
@@ -55,7 +55,7 @@
 <form
 	method="post"
 	action="?/create"
-	class:invalid={form?.validation.has()}
+	class:invalid={form?.validation?.has()}
 	novalidate
 	use:enhance={create_submit_enhance(validate_event, unmarshal_event)}
 >
