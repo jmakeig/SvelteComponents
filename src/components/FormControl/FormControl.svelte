@@ -34,6 +34,7 @@
 
 	interface ProvidedAttrs {
 		name: string;
+		label?: string;
 		[key: string]: unknown;
 	}
 	interface Props {
@@ -102,6 +103,7 @@
 			{@render input({
 				name,
 				id,
+				label,
 				value,
 				[createAttachmentKey()]: validate(validation),
 				placeholder: attrs.placeholder,

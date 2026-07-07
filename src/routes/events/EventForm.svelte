@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import ComboBox from '$components/ComboBox/ComboBox.svelte';
 	import FormControl from '$components/FormControl/FormControl.svelte';
 	import { create_submit_enhance } from '$components/FormControl/FormControl.svelte';
 	import type { Validated } from '$components/FormControl/validation';
@@ -33,7 +34,20 @@
 		validate_event(value as PendingEvent, true)
 	)}
 >
-	<FormControl name="customer-workload" value={undefined} validation={form?.validation} />
+	<FormControl
+		name="customer-workload"
+		label="Which"
+		value={undefined}
+		validation={form?.validation}
+	>
+		{#snippet input({ name, label = '' })}
+			<ComboBox
+				{name}
+				{label}
+				search={async (query) => Promise.resolve([{ name: 'Asdf', value: 'asdf' }])}
+			/>
+		{/snippet}
+	</FormControl>
 	<FormControl name="outcome" value={event?.outcome} validation={form?.validation}>
 		{#snippet input(provided)}
 			<textarea {...provided}></textarea>
