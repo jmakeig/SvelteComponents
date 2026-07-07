@@ -9,8 +9,8 @@
 	 *	use:enhance={create_submit_enhance<ENTITY>(validate_ENTITY)}
 	 * ```
 	 */
-	export function create_submit_enhance<Out, In = unknown>(
-		validate: (data: unknown) => Validated<Out, In>,
+	export function create_submit_enhance<Out>(
+		validate: (data: unknown) => Validated<Out>,
 		unmarshal: (form_data: FormData) => unknown = (form_data) => Object.fromEntries(form_data)
 	): SubmitFunction {
 		return ({ formData, cancel }) => {

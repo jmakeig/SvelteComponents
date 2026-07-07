@@ -13,8 +13,8 @@
 
 	let { data, form }: PageProps = $props();
 
-	function create_submit_enhance<Out, In = unknown>(
-		validate: (data: unknown) => Validated<Out, In>,
+	function create_submit_enhance<Out>(
+		validate: (data: unknown) => Validated<Out>,
 		unmarshal: (form_data: FormData) => unknown = (form_data) => Object.fromEntries(form_data)
 	): SubmitFunction {
 		return ({ formData, cancel }) => {
@@ -43,7 +43,7 @@
 		happened_at?: Date | string | null;
 	};
 
-	function validate_event(event: unknown): Validated<Event, PendingEvent> {
+	function validate_event(event: unknown): Validated<Event> {
 		throw new Error();
 	}
 

@@ -1,4 +1,4 @@
-import type { Event, ID, PendingEvent } from '$lib/entities';
+import type { Event, ID } from '$lib/entities';
 import { Validation, type Validated } from '$components/FormControl/validation';
 import { validate_event } from '$lib/entities';
 
@@ -33,8 +33,8 @@ export async function get_event(id: ID): Promise<Event | null> {
 	return null;
 }
 
-export async function create_event(pending: unknown): Promise<Validated<Event, PendingEvent>> {
-	const result = validate_event(pending as PendingEvent, true);
+export async function create_event(pending: unknown): Promise<Validated<Event>> {
+	const result = validate_event(pending, true);
 	if (result.validation) {
 		return result;
 	}
@@ -47,8 +47,8 @@ export async function create_event(pending: unknown): Promise<Validated<Event, P
 	}
 }
 
-export async function update_event(pending: unknown): Promise<Validated<Event, PendingEvent>> {
-	const result = validate_event(pending as PendingEvent, false);
+export async function update_event(pending: unknown): Promise<Validated<Event>> {
+	const result = validate_event(pending, false);
 	if (result.validation) {
 		return result;
 	}

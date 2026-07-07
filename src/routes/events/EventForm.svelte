@@ -5,16 +5,24 @@
 	import { create_submit_enhance } from '$components/FormControl/FormControl.svelte';
 	import type { Validated } from '$components/FormControl/validation';
 
-	import { type Event, type PendingEvent, validate_event } from '$lib/entities';
+	import { type Event, validate_event } from '$lib/entities';
+
+	/** What this view needs to read back from a pending (possibly invalid) submission. */
+	interface PendingEvent {
+		outcome?: string | null;
+		happened_at?: Date | string | null;
+	}
 
 	interface Props {
 		action?: 'new' | 'edit' | 'view';
 		data?: PendingEvent | Event;
-		form?: Validated<Event, PendingEvent> | null; // ActionData
+		form?: Validated<Event> | null; // ActionData
 	}
 
 	const { action = 'edit', data, form }: Props = $props();
-	let event: PendingEvent | Event | undefined = $derived(form?.data ?? data);
+	let event: PendingEvent | Event | undefined = $derived(
+		(form?.data as PendingEvent | undefined) ?? data
+	);
 
 	/** TODO: Extract later */
 	type Loosey<T> = T | string | null | undefined;
@@ -30,9 +38,7 @@
 	action="?/{action}"
 	novalidate
 	class:invalid={form?.validation?.has()}
-	use:enhance={create_submit_enhance<Event, PendingEvent>((value: unknown) =>
-		validate_event(value as PendingEvent, true)
-	)}
+	use:enhance={create_submit_enhance<Event>((value: unknown) => validate_event(value, true))}
 >
 	<FormControl
 		name="customer-workload"

@@ -11,9 +11,9 @@ export interface Issue {
  * reconcile a "success" shape against a separate "failure" shape. `validation`
  * is empty when `data` is actually valid; check `validation.has()` (or `.is_valid()`).
  */
-export type Validated<Out, Pending = Out> =
+export type Validated<Out> =
 	| { readonly data: Out; readonly validation?: never }
-	| { readonly data: Pending; readonly validation: Validation<Out> };
+	| { readonly data: unknown; readonly validation: Validation<Out> };
 
 export class Validation<Out> {
 	#issues: Issue[] = [];
@@ -62,7 +62,7 @@ export class Validation<Out> {
 
 	collect<In, Out>(
 		collection: Array<In>,
-		validate: (item: In) => Validated<Out, In>,
+		validate: (item: In) => Validated<Out>,
 		base_path: Path = []
 	): Array<In | Out> {
 		let dirty = false;

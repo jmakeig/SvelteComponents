@@ -95,15 +95,15 @@ type WorkloadEvent = BaseEvent & {
 };
 export type Event = CustomerEvent | WorkloadEvent;
 
-export type PendingEvent = Partial<{
-	event: Optional<Event['event']>;
-	outcome: Pending<Event['outcome']>;
-	happened_at: Pending<Event['happened_at']>;
-	/**
-	 * The Customer or Workload
-	 */
-	entity: Optional<Ref<'customer' | 'workload'>>;
-}>;
+// export type PendingEvent = Partial<{
+// 	event: Optional<Event['event']>;
+// 	outcome: Pending<Event['outcome']>;
+// 	happened_at: Pending<Event['happened_at']>;
+// 	/**
+// 	 * The Customer or Workload
+// 	 */
+// 	entity: Optional<Ref<'customer' | 'workload'>>;
+// }>;
 
 /**
  * TODO: Oof. This will be different on the client and the server because of locales.
@@ -126,27 +126,25 @@ function parse_date_local(iso_date: string): Date {
 	return local;
 }
 
-export function validate_event(
-	pending: PendingEvent,
-	is_new: boolean = false
-): Validated<Event, PendingEvent> {
+export function validate_event(pending: unknown, is_new: boolean = false): Validated<Event> {
 	const validation = new Validation<Event>();
 	// @ts-expect-error Clever or evil?
 	const event: Event = {};
 	if (undefined === pending || null === pending || 'object' !== typeof pending) {
 		validation.add('Event must exist');
 	} else {
-		if ('event' in pending && 'string' === typeof pending.event) {
-			event.event = pending.event as ID;
+		const p = pending as Record<string, unknown>;
+		if ('event' in p && 'string' === typeof p.event) {
+			event.event = p.event as ID;
 		} else {
 			if (!is_new) {
 				validation.add('Unknown event', 'event');
 			}
 		}
-		if ('happened_at' in pending) {
-			if (pending.happened_at instanceof Date) event.happened_at = pending.happened_at;
-			else if ('string' === typeof pending.happened_at) {
-				event.happened_at = parse_date_local(pending.happened_at);
+		if ('happened_at' in p) {
+			if (p.happened_at instanceof Date) event.happened_at = p.happened_at;
+			else if ('string' === typeof p.happened_at) {
+				event.happened_at = parse_date_local(p.happened_at);
 			} else {
 				validation.add('Invalid date', 'happened_at');
 			}
@@ -155,11 +153,11 @@ export function validate_event(
 				validation.add('Date required', 'happened_at');
 			}
 		}
-		if ('outcome' in pending && 'string' === typeof pending.outcome) {
-			if (pending.outcome.trim().length < 3) {
+		if ('outcome' in p && 'string' === typeof p.outcome) {
+			if (p.outcome.trim().length < 3) {
 				validation.add('Outcome must be at least 3 characters', 'outcome');
 			} else {
-				event.outcome = pending.outcome.trim();
+				event.outcome = p.outcome.trim();
 			}
 		}
 	}
@@ -171,46 +169,6 @@ export function validate_event(
 }
 /**********************************************************************/
 {
-	const pe0: PendingEvent = {
-		event: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
-		outcome: null,
-		happened_at: new Date(),
-		entity: {
-			_type: 'workload',
-			_id: 'WWWW-WWWW-WWWWW-WWWW-WWWW' as ID
-		}
-	};
-	const pe1: PendingEvent = {
-		// @ts-expect-error
-		event: 'asdf',
-		outcome: null,
-		happened_at: new Date(),
-		entity: {
-			_type: 'workload',
-			_id: 'WWWW-WWWW-WWWWW-WWWW-WWWW' as ID
-		}
-	};
-	const pe2: PendingEvent = {
-		event: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
-		// @ts-expect-error
-		outcome: 44,
-		happened_at: new Date(),
-		entity: {
-			_type: 'workload',
-			_id: 'WWWW-WWWW-WWWWW-WWWW-WWWW' as ID
-		}
-	};
-	const pe3: PendingEvent = {};
-	const pe4: PendingEvent = {
-		// @ts-expect-error Unknown property
-		id: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
-		outcome: null,
-		happened_at: new Date(),
-		entity: {
-			_type: 'workload',
-			_id: 'WWWW-WWWW-WWWWW-WWWW-WWWW' as ID
-		}
-	};
 	const e0: Event = {
 		event: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
 		outcome: 'some stuff',
