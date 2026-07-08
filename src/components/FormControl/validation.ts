@@ -6,10 +6,10 @@ export interface Issue {
 }
 
 /**
- * The result of validating something. `data` always holds the current field
- * values — whatever was submitted, valid or not — so consumers never need to
- * reconcile a "success" shape against a separate "failure" shape. `validation`
- * is empty when `data` is actually valid; check `validation.has()` (or `.is_valid()`).
+ * APIs should never `throw` because of invalid user input. In that case, they should always return
+ * what the user submitted along with the associated validation errors, `Validation<Entity>`.
+ * When the data is valid, it will be stongly typed in the `data` property and there will
+ * be no `validation` property.
  */
 export type Validated<Out> =
 	| { readonly data: Out; readonly validation?: never }

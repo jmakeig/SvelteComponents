@@ -40,45 +40,32 @@ type Entity<Name extends string> = {
 	name: string;
 };
 
-/**
- * A `FormData`-ready  reference to another entity.
- *
- * @usage ```
- * 		// TODO
- * ```
- */
-interface Ref<Name extends string> {
-	/**
-	 * The type of entity. This can usually be inferred from the property name,
-	 * but may be necessary for a union type property that can accept multiple
-	 * entity types.
-	 */
-	_type?: Name;
-	/** The unique identifier of the referenced entity */
-	_id: ID;
-}
+type Ref<Name extends string> = Omit<Entity<Name>, 'label' | 'name'> &
+	Partial<Pick<Entity<Name>, 'label' | 'name'>>;
+
+// /**
+//  * A `FormData`-ready  reference to another entity.
+//  *
+//  * @usage ```
+//  * 		// TODO
+//  * ```
+//  */
+// interface Ref<Name extends string> {
+// 	/**
+// 	 * The type of entity. This can usually be inferred from the property name,
+// 	 * but may be necessary for a union type property that can accept multiple
+// 	 * entity types.
+// 	 */
+// 	_type?: Name;
+// 	/** The unique identifier of the referenced entity */
+// 	_id: ID;
+// }
 
 export type Segment = 'select' | 'enterprise' | 'corporate' | 'smb';
 
 export type Customer = Entity<'customer'> & { segment: Optional<Segment> };
-export type PendingCustomer = Partial<{
-	customer: Optional<Customer['customer']>;
-	label: Pending<Customer['label']>;
-	name: Pending<Customer['name']>;
-	//
-	segment: Pending<Customer['segment']>;
-}>;
 
 export type Workload = Entity<'workload'> & { size: Optional<number> };
-export type PendingWorkload = Partial<{
-	workload: Optional<Workload['workload']>;
-	label: Pending<Workload['label']>;
-	name: Pending<Workload['name']>;
-	//
-	customer: Ref<'customer'>;
-	//
-	size: Pending<Workload['size']>;
-}>;
 
 type BaseEvent = {
 	event: ID;
@@ -86,24 +73,14 @@ type BaseEvent = {
 	happened_at: Date;
 };
 type CustomerEvent = BaseEvent & {
-	customer: Entity<'customer'>;
+	customer: Ref<'customer'>;
 	workload?: never;
 };
 type WorkloadEvent = BaseEvent & {
-	workload: Entity<'workload'>;
+	workload: Ref<'workload'>;
 	customer?: never;
 };
 export type Event = CustomerEvent | WorkloadEvent;
-
-// export type PendingEvent = Partial<{
-// 	event: Optional<Event['event']>;
-// 	outcome: Pending<Event['outcome']>;
-// 	happened_at: Pending<Event['happened_at']>;
-// 	/**
-// 	 * The Customer or Workload
-// 	 */
-// 	entity: Optional<Ref<'customer' | 'workload'>>;
-// }>;
 
 /**
  * TODO: Oof. This will be different on the client and the server because of locales.
@@ -127,6 +104,15 @@ export function parse_date_local(iso_date: string | null): Date {
 	return local;
 }
 
+/**
+ * Strict structural and value type and existence validation.
+ * This doesn’t check contraints like uniqueness or referential integrity.
+ * Those need to happen closer to the database.
+ *
+ * @param pending Something with and `Event`-like shape
+ * @param is_new Optional flag to specify whether the intent is to validate a new entry, which will have a `null` `event` identifier
+ * @returns A strongly typed `Event` instance or the original `pending` inupt and the `Validation<Event>` instance
+ */
 export function validate_event(pending: unknown, is_new: boolean = false): Validated<Event> {
 	const validation = new Validation<Event>();
 	// @ts-expect-error Clever or evil?
@@ -140,13 +126,35 @@ export function validate_event(pending: unknown, is_new: boolean = false): Valid
 		} else {
 			if (!is_new) {
 				validation.add('Unknown event', 'event');
+			} else {
+				// Careful!
+				event.event = null as unknown as ID;
 			}
 		}
-		// TODO: Customer-workload
+		if ('customer' in p || 'workload' in p) {
+			if ('customer' in p && 'string' === typeof p.customer && !('workload' in p)) {
+				event.customer = {
+					customer: p.customer as ID
+				};
+			} else if ('workload' in p && 'string' === typeof p.workload && !('customer' in p)) {
+				event.workload = {
+					workload: p.workload as ID
+				};
+			} else {
+				validation.add('Invalid customer or workload', 'customer_workload');
+			}
+		} else {
+			validation.add('Customer or workload is required', 'customer_workload');
+		}
 		if ('happened_at' in p) {
 			if (p.happened_at instanceof Date) event.happened_at = p.happened_at;
 			else if ('string' === typeof p.happened_at) {
-				event.happened_at = parse_date_local(p.happened_at);
+				const happened_at = parse_date_local(p.happened_at);
+				if (isNaN(happened_at.getTime())) {
+					validation.add('Invalid date', 'happened_at');
+				} else {
+					event.happened_at = happened_at;
+				}
 			} else {
 				validation.add('Invalid date', 'happened_at');
 			}
@@ -161,6 +169,8 @@ export function validate_event(pending: unknown, is_new: boolean = false): Valid
 			} else {
 				event.outcome = p.outcome.trim();
 			}
+		} else {
+			validation.add('Outcome is required', 'outcome');
 		}
 	}
 	// console.log('validate_event', pending, event, validation.length);
@@ -170,6 +180,7 @@ export function validate_event(pending: unknown, is_new: boolean = false): Valid
 	return { data: event };
 }
 /**********************************************************************/
+/*
 {
 	const e0: Event = {
 		event: 'EEEE-EEEE-EEEE-EEEE-EEEE' as ID,
@@ -222,3 +233,4 @@ export function validate_event(pending: unknown, is_new: boolean = false): Valid
 		happened_at: new Date()
 	};
 }
+*/

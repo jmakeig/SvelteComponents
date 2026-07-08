@@ -8,7 +8,10 @@
 <nav><a href="/events">Events</a>, <a href="/events/new">New</a></nav>
 <ul>
 	{#each data.events as event}
-		<li><a href="/events/{event.event}">{event.outcome} ({event.happened_at.toISOString()})</a></li>
+		<li>
+			<a href="/events/{event.event}">{event.outcome} ({event.happened_at.toISOString()})</a>
+			<pre>{JSON.stringify(event, null, 2)}</pre>
+		</li>
 	{:else}<li>No events. <a href="/events/new">Create one.</a></li>
 	{/each}
 </ul>
