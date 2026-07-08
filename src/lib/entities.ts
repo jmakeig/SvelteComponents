@@ -111,7 +111,8 @@ export type Event = CustomerEvent | WorkloadEvent;
  * @param iso_date
  * @returns `Date` or `new Date(NaN)` for invalid dates
  */
-function parse_date_local(iso_date: string): Date {
+export function parse_date_local(iso_date: string | null): Date {
+	if (null === iso_date) return new Date(NaN);
 	const regex = /^\d{4}-\d{2}-\d{2}$/;
 	if (!regex.test(iso_date)) {
 		return new Date(NaN);
@@ -141,6 +142,7 @@ export function validate_event(pending: unknown, is_new: boolean = false): Valid
 				validation.add('Unknown event', 'event');
 			}
 		}
+		// TODO: Customer-workload
 		if ('happened_at' in p) {
 			if (p.happened_at instanceof Date) event.happened_at = p.happened_at;
 			else if ('string' === typeof p.happened_at) {

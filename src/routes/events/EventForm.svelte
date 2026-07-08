@@ -6,9 +6,11 @@
 	import type { Validated } from '$components/FormControl/validation';
 
 	import { type Event, validate_event } from '$lib/entities';
+	import type { Match } from '$components/ComboBox/machine';
 
 	/** What this view needs to read back from a pending (possibly invalid) submission. */
 	interface PendingEvent {
+		customer_workload: string | null;
 		outcome?: string | null;
 		happened_at?: Date | string | null;
 	}
@@ -28,8 +30,17 @@
 	type Loosey<T> = T | string | null | undefined;
 
 	function to_iso_date(value: Loosey<Date>): Loosey<string> {
-		if (value instanceof Date) return value.toISOString().slice(0, 10);
+		if (value instanceof Date) {
+			if (isNaN(value.getTime())) return null;
+			return value.toISOString().slice(0, 10);
+		}
 		return value;
+	}
+
+	async function search_customer_workload(query: string): Promise<Match[]> {
+		const response = await fetch(`/api/customer-workload?q=${encodeURIComponent(query)}`);
+		if (!response.ok) throw new Error('customer_workload_search_failed');
+		return response.json();
 	}
 </script>
 
@@ -41,17 +52,13 @@
 	use:enhance={create_submit_enhance<Event>((value: unknown) => validate_event(value, true))}
 >
 	<FormControl
-		name="customer-workload"
+		name="customer_workload"
 		label="Which"
 		value={undefined}
 		validation={form?.validation}
 	>
 		{#snippet input({ name, label = '' })}
-			<ComboBox
-				{name}
-				{label}
-				search={async (query) => Promise.resolve([{ name: 'Asdf', value: 'asdf' }])}
-			/>
+			<ComboBox {name} {label} search={search_customer_workload} />
 		{/snippet}
 	</FormControl>
 	<FormControl name="outcome" value={event?.outcome} validation={form?.validation}>
