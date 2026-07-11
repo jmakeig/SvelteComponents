@@ -88,9 +88,14 @@
 		unmarshall
 	)}
 >
-	{#if form && !form.validation}
-		<p>Sucessfully submitted ({event!.event})</p>
+	{#if form}
+		{#if form.validation}
+			<p class="error">Nope! {form.validation.first()?.message}</p>
+		{:else}
+			<p>Sucessfully submitted ({event!.event})</p>
+		{/if}
 	{/if}
+	<input type="hidden" name="event" value={event?.event} />
 	<FormControl
 		name="customer_workload"
 		label="Which"

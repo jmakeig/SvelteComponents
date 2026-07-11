@@ -1676,24 +1676,21 @@ export const db = {
 		} else if (q.startsWith('update event')) {
 			const event = input as Event;
 			const index = EVENTS.findIndex((e) => e.event === event.event);
+			if (index < 0) throw new Error('Event not found'); // Is this right?
 
 			if ('customer' in event && 'object' === typeof event.customer) {
-				const found = EVENTS.find((e) => e.customer?.customer === event.customer.customer);
+				const found = CUSTOMERS.find((c) => c.customer === event.customer.customer);
 				if (undefined === found) throw new ReferenceError(`${event.customer.customer}`);
-				event.customer = { ...found.customer! };
+				event.customer = { customer: found.customer, name: found.name, label: found.label };
 			}
 
 			if ('workload' in event && 'object' === typeof event.workload) {
-				const found = EVENTS.find((e) => e.workload?.workload === event.workload.workload);
+				const found = WORKLOADS.find((w) => w.workload === event.workload.workload);
 				if (undefined === found) throw new ReferenceError(`${event.workload.workload}`);
-				event.workload = { ...found.workload! };
+				event.workload = { workload: found.workload, name: found.name, label: found.label };
 			}
-			console.log(event);
-			if (index > -1) {
-				EVENTS[index] = event;
-				return EVENTS[index] as Out;
-			}
-			throw new Error('Event not found');
+			EVENTS[index] = event;
+			return EVENTS[index] as Out;
 		}
 		throw new Error(`Not implemented: ${query}`);
 	}
