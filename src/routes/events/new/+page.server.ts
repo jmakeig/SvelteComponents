@@ -1,18 +1,9 @@
-import type { PageServerLoad, Actions } from './$types';
+import type { Actions } from './$types';
 import * as api from '$lib/server/api';
 import { fail } from '@sveltejs/kit';
 import { Validation } from '$components/FormControl/validation';
 import { type Event } from '$lib/entities';
 import { unmarshall } from '../EventForm.svelte';
-
-export const load = (() => {
-	return {
-		event: null,
-		customer_workload: null,
-		outcome: null,
-		happened_at: new Date()
-	};
-}) satisfies PageServerLoad;
 
 export const actions = {
 	new: async ({ request }) => {

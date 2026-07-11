@@ -1,7 +1,9 @@
-import { error } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
-import type { ID } from '$lib/entities';
+import type { ID, Event } from '$lib/entities';
 import * as api from '$lib/server/api';
+import { Validation } from '$components/FormControl/validation';
+import { unmarshall } from '../EventForm.svelte';
 
 export const load = (async ({ params }) => {
 	const event = await api.get_event(params.id as ID);
@@ -11,7 +13,19 @@ export const load = (async ({ params }) => {
 
 export const actions = {
 	edit: async ({ request }) => {
-		const pending = Object.fromEntries(await request.formData());
+		const form = await request.formData();
+		let pending: Record<string, unknown>;
+		try {
+			pending = unmarshall(form);
+		} catch {
+			return fail(422, {
+				validation: new Validation<Event>().add(
+					'Invalid customer or workload',
+					'customer_workload'
+				),
+				data: Object.fromEntries(form)
+			});
+		}
 		return api.update_event(pending);
 	}
 } satisfies Actions;

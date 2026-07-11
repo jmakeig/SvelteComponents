@@ -3,73 +3,6 @@ import { Validation, type Validated } from '$components/FormControl/validation';
 import { validate_event } from '$lib/entities';
 import ufuzzy from '@leeoniya/ufuzzy';
 
-const events: Array<Event> = [];
-
-const db = {
-	// node-postgres will throw on things like a constraint violation; callers must catch.
-	async execute<T>(query: string, input: T): Promise<T> {
-		if (query.toLowerCase().startsWith('insert into event')) {
-			const event = Object.assign(input as object, { event: crypto.randomUUID() as ID }) as T;
-			events.push(event as Event);
-			return event;
-		} else if (query.toLowerCase().startsWith('update event')) {
-			const index = events.findIndex((event) => event.event === (input as Event).event);
-			if (index > -1) {
-				events[index] = input as Event;
-				return events[index] as T;
-			}
-			throw new Error('Event not found');
-		}
-		throw new Error(`Not implemented: ${query}`);
-	}
-};
-
-export async function get_events(): Promise<Array<Event>> {
-	return Promise.resolve(events);
-}
-
-export async function get_event(id: ID): Promise<Event | null> {
-	const results = events.filter((event) => id === event.event);
-	if (1 === results.length) return results[0];
-	return null;
-}
-
-export async function create_event(pending: unknown): Promise<Validated<Event>> {
-	const result = validate_event(pending, true);
-	if (result.validation) {
-		return result;
-	}
-	try {
-		return { data: await db.execute('INSERT INTO event', result.data) };
-	} catch (db_error) {
-		const validation = new Validation<Event>();
-		validation.add(db_error instanceof Error ? db_error.message : 'db_error');
-		return { data: result.data, validation };
-	}
-}
-
-export async function update_event(pending: unknown): Promise<Validated<Event>> {
-	const result = validate_event(pending, false);
-	if (result.validation) {
-		return result;
-	}
-	try {
-		return { data: await db.execute('UPDATE event', result.data) };
-	} catch (db_error) {
-		const validation = new Validation<Event>();
-		validation.add(db_error instanceof Error ? db_error.message : 'db_error');
-		return { data: result.data, validation };
-	}
-}
-
-interface CustomerWorkload {
-	type: 'customer' | 'workload';
-	name: string;
-	label: string;
-	value: string;
-	ref?: CustomerWorkload; // Really only workload, but let’s get over this hump
-}
-
 const ENTITIES: Array<CustomerWorkload> = [
 	{
 		type: 'customer',
@@ -972,6 +905,99 @@ const ENTITIES: Array<CustomerWorkload> = [
 		}
 	}
 ];
+
+const EVENTS: Array<Event> = [];
+
+const db = {
+	// node-postgres will throw on things like a constraint violation; callers must catch.
+	async execute<T>(query: string, input: T): Promise<T> {
+		if (query.toLowerCase().startsWith('insert into event')) {
+			const event = Object.assign(input as object, { event: crypto.randomUUID() as ID }) as T;
+			EVENTS.push(event as Event);
+			return event;
+		} else if (query.toLowerCase().startsWith('update event')) {
+			const event = input as Event;
+			const index = EVENTS.findIndex((e) => event.event === event.event);
+
+			if ('customer' in event && 'object' === typeof event.customer) {
+				const ref = ENTITIES.find(
+					(ent) => 'customer' === ent.type && ent.value === event.customer.customer
+				);
+				if (undefined === ref) throw new ReferenceError(`${event.customer.customer}`);
+				event.customer = {
+					customer: ref.value as ID,
+					label: ref.label,
+					name: ref.name
+				};
+			}
+
+			if ('workload' in event && 'object' === typeof event.workload) {
+				const ref = ENTITIES.find(
+					(ent) => 'workload' === ent.type && ent.value === event.workload.workload
+				);
+				if (undefined === ref) throw new ReferenceError(`${event.workload.workload}`);
+				event.workload = {
+					workload: ref.value as ID,
+					label: ref.label,
+					name: ref.name
+				};
+			}
+			console.log(event);
+			if (index > -1) {
+				EVENTS[index] = input as Event;
+				return EVENTS[index] as T;
+			}
+			throw new Error('Event not found');
+		}
+		throw new Error(`Not implemented: ${query}`);
+	}
+};
+
+export async function get_events(): Promise<Array<Event>> {
+	return Promise.resolve(EVENTS);
+}
+
+export async function get_event(id: ID): Promise<Event | null> {
+	const results = EVENTS.filter((event) => id === event.event);
+	if (1 === results.length) return results[0];
+	return null;
+}
+
+export async function create_event(pending: unknown): Promise<Validated<Event>> {
+	const result = validate_event(pending, true);
+	if (result.validation) {
+		return result;
+	}
+	try {
+		return { data: await db.execute('INSERT INTO event', result.data) };
+	} catch (db_error) {
+		const validation = new Validation<Event>();
+		validation.add(db_error instanceof Error ? db_error.message : 'db_error');
+		return { data: result.data, validation };
+	}
+}
+
+export async function update_event(pending: unknown): Promise<Validated<Event>> {
+	const result = validate_event(pending, false);
+	if (result.validation) {
+		return result;
+	}
+	try {
+		return { data: await db.execute('UPDATE event', result.data) };
+	} catch (db_error) {
+		const validation = new Validation<Event>();
+		validation.add(db_error instanceof Error ? db_error.message : 'db_error');
+		return { data: result.data, validation };
+	}
+}
+
+interface CustomerWorkload {
+	type: 'customer' | 'workload';
+	name: string;
+	label: string;
+	value: string;
+	ref?: CustomerWorkload; // Really only workload, but let’s get over this hump
+}
 
 function _search(
 	list: Array<CustomerWorkload>,

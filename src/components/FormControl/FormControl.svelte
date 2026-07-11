@@ -14,6 +14,7 @@
 		unmarshal: (form_data: FormData) => unknown = (form_data) => Object.fromEntries(form_data)
 	): SubmitFunction {
 		return ({ formData, cancel }) => {
+			// TODO: umarshall throws
 			const result = validate(unmarshal(formData));
 			if (result.validation) {
 				applyAction({
@@ -22,7 +23,15 @@
 					data: result
 				});
 				cancel();
+				return;
 			}
+			// Skip `use:enhance`'s default `form.reset()`: it mutates uncontrolled inputs’
+			// DOM values directly, so any field whose reactive `value` prop recomputes to the
+			// same string (e.g. `happened_at` defaulting to “today” both before and after
+			// submit) never gets reapplied by Svelte and stays blank from the native reset.
+			return async ({ update }) => {
+				await update({ reset: false });
+			};
 		};
 	}
 </script>

@@ -4,13 +4,15 @@
 	 * splitting the ComboBox's combined `customer_workload` value (`"customer_<id>"` /
 	 * `"workload_<id>"`) back into a `customer` or `workload` key. Shared between the client
 	 * (`create_submit_enhance`, below) and the server action so they agree on the same shape.
+	 *
+	 * @throws {TypeError} Unexpectd parse error
 	 */
 	export function unmarshall(form: FormData): Record<string, unknown> {
 		const customer_workload = form.get('customer_workload') as string | null;
 		let pair = {};
 		if (customer_workload) {
 			if (!/^(customer|workload)_[a-z0-9\-]+$/.test(customer_workload)) {
-				throw new TypeError(`${customer_workload} is not valid`); // This should never happen
+				throw new TypeError(`'${customer_workload}' is not valid`); // This should never happen
 			}
 			const [type, entity] = customer_workload.split('_');
 			pair = { [type]: entity };
@@ -36,13 +38,15 @@
 
 	interface Props {
 		action?: 'new' | 'edit' | 'view';
-		data?: unknown;
+		data: Event;
 		form?: Validated<Event> | null; // ActionData
 	}
 
 	const { action = 'edit', data, form }: Props = $props();
 	/** Either a validated `Event` or the raw (possibly invalid) submission being redisplayed — read fields off it with a local cast, not a modeled shape. */
 	const event = $derived((form?.data ?? data) as Record<string, unknown> | undefined);
+
+	$inspect(event);
 
 	/** TODO: Extract later */
 	type Loosey<T> = T | string | null | undefined;
@@ -60,6 +64,18 @@
 		if (!response.ok) throw new Error('customer_workload_search_failed');
 		return response.json();
 	}
+
+	function initial_match(event: Event): Match | undefined {
+		if ('customer' in event && event.customer) {
+			const { customer: id, name = 'xxxxxx', label } = event.customer;
+			return { name, label, value: `customer_${id}` };
+		}
+		if ('workload' in event && event.workload) {
+			const { workload: id, name = '', label } = event.workload;
+			return { name, label, value: `workload_${id}` };
+		}
+		return undefined;
+	}
 </script>
 
 <form
@@ -67,8 +83,14 @@
 	action="?/{action}"
 	novalidate
 	class:invalid={form?.validation?.has()}
-	use:enhance={create_submit_enhance<Event>((value: unknown) => validate_event(value, true), unmarshall)}
+	use:enhance={create_submit_enhance<Event>(
+		(value: unknown) => validate_event(value, true),
+		unmarshall
+	)}
 >
+	{#if form && !form.validation}
+		<p>Sucessfully submitted ({event!.event})</p>
+	{/if}
 	<FormControl
 		name="customer_workload"
 		label="Which"
@@ -76,8 +98,7 @@
 		validation={form?.validation}
 	>
 		{#snippet input({ name, label = '' })}
-			<ComboBox {name} {label} search={search_customer_workload} />
-
+			<ComboBox {name} {label} value={initial_match(data)} search={search_customer_workload} />
 		{/snippet}
 	</FormControl>
 	<FormControl name="outcome" value={event?.outcome} validation={form?.validation}>
