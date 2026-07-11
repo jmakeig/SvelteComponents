@@ -5,7 +5,6 @@
 </script>
 
 <h1>Events</h1>
-<nav><a href="/events">Events</a>, <a href="/events/new">New</a></nav>
 <ul>
 	{#each data.events as event}
 		<li>
