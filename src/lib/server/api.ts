@@ -39,12 +39,7 @@ export async function update_event(pending: unknown): Promise<Validated<Event>> 
 	}
 }
 
-function delay(duration = 200) {
-	return new Promise((resolve) => setTimeout(resolve, duration));
-}
-
 export async function match_customer_workload(input: string) {
-	await delay(120);
 	const matches = await db.execute<Array<Customer | Workload>>(
 		'select customer_workload where like',
 		input

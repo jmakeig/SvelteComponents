@@ -1656,9 +1656,23 @@ function _search(
 		.slice(0, limit);
 }
 
+/**
+ *
+ * @param duration Milliseconds to wait
+ * @param error_probability Probablity it will throw an error. Throws before waits. Defaults to 0.
+ * @usage ```
+ * 	await delay(200, 0.2)
+ * ```
+ */
+function delay(duration = 200, error_probability = 0) {
+	if (Math.random() < error_probability) throw new Error('Random backend error');
+	return new Promise((resolve) => setTimeout(resolve, duration));
+}
+
 export const db = {
 	// node-postgres will throw on things like a constraint violation; callers must catch.
 	async execute<Out>(query: string, input: unknown): Promise<Out> {
+		await delay(200, 0.2);
 		// Ordered most- to least-specific: each prefix is a substring of the next one down.
 		const q = query.toLowerCase();
 		if (q.startsWith('select customer_workload where like')) {
