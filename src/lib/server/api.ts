@@ -1,7 +1,7 @@
 import type { Customer, Event, ID, Workload } from '$lib/entities';
 import { Validation, type Validated } from '$components/FormControl/validation';
 import { validate_event } from '$lib/entities';
-import { db } from './db';
+import { db, ConstraintError } from './db';
 
 export const NOT_FOUND = 'not_found';
 
@@ -21,9 +21,10 @@ export async function create_event(pending: unknown): Promise<Validated<Event>> 
 	try {
 		return { data: await db.execute<Event>('insert into event', result.data) };
 	} catch (db_error) {
-		const validation = new Validation<Event>();
-		validation.add(db_error instanceof Error ? db_error.message : 'db_error');
-		return { data: result.data, validation };
+		if (db_error instanceof ConstraintError) {
+			return { data: result.data, validation: new Validation<Event>().add(db_error.message) };
+		}
+		throw db_error;
 	}
 }
 
@@ -42,9 +43,10 @@ export async function update_event(pending: unknown): Promise<Validated<Event>> 
 		}
 		return { data: updated };
 	} catch (db_error) {
-		const validation = new Validation<Event>();
-		validation.add(db_error instanceof Error ? db_error.message : 'db_error');
-		return { data: result.data, validation };
+		if (db_error instanceof ConstraintError) {
+			return { data: result.data, validation: new Validation<Event>().add(db_error.message) };
+		}
+		throw db_error;
 	}
 }
 

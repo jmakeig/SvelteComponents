@@ -1669,6 +1669,14 @@ function delay(duration = 200, error_probability = 0) {
 	return new Promise((resolve) => setTimeout(resolve, duration));
 }
 
+/** Signals a mocked database constraint violation (foreign key, uniqueness, etc). */
+export class ConstraintError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'ConstraintError';
+	}
+}
+
 export const db = {
 	// node-postgres will throw on things like a constraint violation; callers must catch.
 	async execute<Out>(query: string, input: unknown): Promise<Out> {
@@ -1684,7 +1692,12 @@ export const db = {
 		} else if (q.startsWith('select event')) {
 			return EVENTS as Out;
 		} else if (q.startsWith('insert into event')) {
-			const event = Object.assign(input as object, { event: crypto.randomUUID() as ID }) as Event;
+			const pending = input as Event;
+			const id = pending.event ?? (crypto.randomUUID() as ID);
+			if (EVENTS.some((e) => e.event === id)) {
+				throw new ConstraintError(`Event ${id} already exists`);
+			}
+			const event = { ...pending, event: id };
 			EVENTS.push(event);
 			return event as Out;
 		} else if (q.startsWith('update event')) {
@@ -1695,13 +1708,13 @@ export const db = {
 
 			if ('customer' in event && 'object' === typeof event.customer) {
 				const found = CUSTOMERS.find((c) => c.customer === event.customer.customer);
-				if (undefined === found) throw new ReferenceError(`${event.customer.customer}`);
+				if (undefined === found) throw new ConstraintError(`${event.customer.customer}`);
 				event.customer = { customer: found.customer, name: found.name, label: found.label };
 			}
 
 			if ('workload' in event && 'object' === typeof event.workload) {
 				const found = WORKLOADS.find((w) => w.workload === event.workload.workload);
-				if (undefined === found) throw new ReferenceError(`${event.workload.workload}`);
+				if (undefined === found) throw new ConstraintError(`${event.workload.workload}`);
 				event.workload = { workload: found.workload, name: found.name, label: found.label };
 			}
 			EVENTS[index] = event;
