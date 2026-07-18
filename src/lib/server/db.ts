@@ -1693,7 +1693,12 @@ export const db = {
 			return [...EVENTS].sort((a, b) => b.happened_at.getTime() - a.happened_at.getTime()) as Out;
 		} else if (q.startsWith('insert into event')) {
 			const pending = input as Event;
-			const id = pending.event ?? (crypto.randomUUID() as ID);
+			// event is a generated column: the caller may never set it directly.
+			if (pending.event) {
+				throw new ConstraintError('Cannot set id when creating a new event');
+			}
+			const id = crypto.randomUUID() as ID;
+			// PK uniqueness is always enforced, however the id was sourced.
 			if (EVENTS.some((e) => e.event === id)) {
 				throw new ConstraintError(`Event ${id} already exists`);
 			}

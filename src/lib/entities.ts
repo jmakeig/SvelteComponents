@@ -121,15 +121,14 @@ export function validate_event(pending: unknown, is_new: boolean = false): Valid
 		validation.add('Event must exist');
 	} else {
 		const p = pending as Record<string, unknown>;
-		if ('event' in p && 'string' === typeof p.event) {
+		if ('event' in p && 'string' === typeof p.event && '' !== p.event) {
 			event.event = p.event as ID;
+		} else if (!is_new) {
+			validation.add('Unknown event', 'event');
 		} else {
-			if (!is_new) {
-				validation.add('Unknown event', 'event');
-			} else {
-				// Careful!
-				event.event = null as unknown as ID;
-			}
+			// Careful! Whether the server accepts a client-supplied id is a constraint
+			// enforced at the db layer, not a shape-validation concern.
+			event.event = null as unknown as ID;
 		}
 		if ('customer' in p || 'workload' in p) {
 			if ('customer' in p && 'string' === typeof p.customer && !('workload' in p)) {
