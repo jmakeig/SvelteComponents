@@ -1,7 +1,7 @@
 import type { Customer, Event, ID, Workload } from '$lib/entities';
 import { Validation, type Validated } from '$components/FormControl/validation';
 import { validate_event } from '$lib/entities';
-import { db } from './db';
+import { db, AssertionError } from './db';
 
 export async function get_events(): Promise<Array<Event>> {
 	return db.execute<Array<Event>>('select event', undefined);
@@ -36,6 +36,17 @@ export async function update_event(pending: unknown): Promise<Validated<Event>> 
 		const validation = new Validation<Event>();
 		validation.add(db_error instanceof Error ? db_error.message : 'db_error');
 		return { data: result.data, validation };
+	}
+}
+
+export async function delete_event(id: ID): Promise<Validation<Event> | undefined> {
+	try {
+		await db.execute<void>('delete event', id);
+	} catch (db_error) {
+		if (db_error instanceof AssertionError) {
+			return new Validation<Event>().add(db_error.message);
+		}
+		throw db_error;
 	}
 }
 

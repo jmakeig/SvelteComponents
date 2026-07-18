@@ -5,6 +5,7 @@
 </script>
 
 <h1>Events</h1>
+<p>{data.events.length}</p>
 <ul>
 	{#each data.events as event}
 		<li>

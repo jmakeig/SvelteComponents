@@ -1,4 +1,4 @@
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import type { ID, Event } from '$lib/entities';
 import * as api from '$lib/server/api';
@@ -27,5 +27,12 @@ export const actions = {
 			});
 		}
 		return api.update_event(pending);
+	},
+	delete: async ({ params }) => {
+		const validation = await api.delete_event(params.id as ID);
+		if (validation) {
+			error(404, validation.first()?.message ?? 'Event not found');
+		}
+		redirect(303, '/events');
 	}
 } satisfies Actions;

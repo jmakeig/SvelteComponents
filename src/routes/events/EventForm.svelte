@@ -128,8 +128,23 @@
 				{@render icon_create()} Update
 			{/if}
 		</button>
+		{#if 'edit' === action}
+			<button
+				type="submit"
+				form="event-delete"
+				onclick={(evt) => {
+					if (!confirm('Delete this event?')) evt.preventDefault();
+				}}
+			>
+				Delete
+			</button>
+		{/if}
 	</div>
 </form>
+
+{#if 'edit' === action}
+	<form id="event-delete" method="post" action="?/delete" use:enhance></form>
+{/if}
 
 {#snippet icon_create(width = '1em', height = '1em')}
 	<svg

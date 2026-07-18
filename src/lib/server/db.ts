@@ -1669,6 +1669,18 @@ function delay(duration = 200, error_probability = 0) {
 	return new Promise((resolve) => setTimeout(resolve, duration));
 }
 
+/** Signals a query ran without error but its expected postcondition (e.g. a non-empty `RETURNING`) wasn’t met. */
+export class AssertionError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'AssertionError';
+	}
+}
+
+function assert(condition: unknown, message: string): asserts condition {
+	if (!condition) throw new AssertionError(message);
+}
+
 export const db = {
 	// node-postgres will throw on things like a constraint violation; callers must catch.
 	async execute<Out>(query: string, input: unknown): Promise<Out> {
@@ -1705,6 +1717,13 @@ export const db = {
 			}
 			EVENTS[index] = event;
 			return EVENTS[index] as Out;
+		} else if (q.startsWith('delete event')) {
+			const id = input as ID;
+			const index = EVENTS.findIndex((e) => e.event === id);
+			// DELETE ... RETURNING event: an empty result means nothing matched.
+			assert(index >= 0, 'Event not found');
+			const [deleted] = EVENTS.splice(index, 1);
+			return deleted as Out;
 		}
 		throw new Error(`Not implemented: ${query}`);
 	}
