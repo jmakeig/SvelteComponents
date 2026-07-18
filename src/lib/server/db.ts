@@ -1690,7 +1690,7 @@ export const db = {
 			const results = EVENTS.filter((event) => id === event.event);
 			return (1 === results.length ? results[0] : null) as Out;
 		} else if (q.startsWith('select event')) {
-			return EVENTS as Out;
+			return [...EVENTS].sort((a, b) => b.happened_at.getTime() - a.happened_at.getTime()) as Out;
 		} else if (q.startsWith('insert into event')) {
 			const pending = input as Event;
 			const id = pending.event ?? (crypto.randomUUID() as ID);
