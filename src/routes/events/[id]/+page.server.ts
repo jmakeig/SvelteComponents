@@ -26,12 +26,16 @@ export const actions = {
 				data: Object.fromEntries(form)
 			});
 		}
-		return api.update_event(pending);
+		const result = await api.update_event(pending);
+		if (result.validation?.coded(api.NOT_FOUND)) {
+			error(404, result.validation.first(undefined, api.NOT_FOUND)?.message ?? 'Event not found');
+		}
+		return result;
 	},
 	delete: async ({ params }) => {
 		const validation = await api.delete_event(params.id as ID);
-		if (validation) {
-			error(404, validation.first()?.message ?? 'Event not found');
+		if (validation?.coded(api.NOT_FOUND)) {
+			error(404, validation.first(undefined, api.NOT_FOUND)?.message ?? 'Event not found');
 		}
 		redirect(303, '/events');
 	}

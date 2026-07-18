@@ -1,7 +1,9 @@
 import type { Customer, Event, ID, Workload } from '$lib/entities';
 import { Validation, type Validated } from '$components/FormControl/validation';
 import { validate_event } from '$lib/entities';
-import { db, AssertionError } from './db';
+import { db } from './db';
+
+export const NOT_FOUND = 'not_found';
 
 export async function get_events(): Promise<Array<Event>> {
 	return db.execute<Array<Event>>('select event', undefined);
@@ -31,7 +33,14 @@ export async function update_event(pending: unknown): Promise<Validated<Event>> 
 		return result;
 	}
 	try {
-		return { data: await db.execute<Event>('update event', result.data) };
+		const updated = await db.execute<Event | null>('update event', result.data);
+		if (!updated) {
+			return {
+				data: result.data,
+				validation: new Validation<Event>().add('Event not found', undefined, NOT_FOUND)
+			};
+		}
+		return { data: updated };
 	} catch (db_error) {
 		const validation = new Validation<Event>();
 		validation.add(db_error instanceof Error ? db_error.message : 'db_error');
@@ -39,14 +48,10 @@ export async function update_event(pending: unknown): Promise<Validated<Event>> 
 	}
 }
 
-export async function delete_event(id: ID): Promise<Validation<Event> | undefined> {
-	try {
-		await db.execute<void>('delete event', id);
-	} catch (db_error) {
-		if (db_error instanceof AssertionError) {
-			return new Validation<Event>().add(db_error.message);
-		}
-		throw db_error;
+export async function delete_event(id: ID): Promise<Validation<void> | undefined> {
+	const deleted = await db.execute<Event | null>('delete event', id);
+	if (!deleted) {
+		return new Validation<void>().add('Event not found', undefined, NOT_FOUND);
 	}
 }
 
