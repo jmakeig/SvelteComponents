@@ -5,7 +5,12 @@ import { db, ConstraintError } from './db';
 
 export const NOT_FOUND = 'not_found';
 
-export async function get_events(): Promise<Array<Event>> {
+/**
+ * Retrieves an ordered collection of `Event` instances.
+ * 
+ * @returns A collection of `Event` instances or an empty `Array`
+ */
+export async function list_events(): Promise<Array<Event>> {
 	return db.execute<Array<Event>>('select event', undefined);
 }
 
