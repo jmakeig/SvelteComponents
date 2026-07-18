@@ -16,7 +16,8 @@
 				"dracula-theme.theme-dracula",
 				"editorconfig.editorconfig",
 				"anthropic.claude-code",
-				"statelyai.stately-vscode"
+				"statelyai.stately-vscode",
+				"MylesMurphy.prettify-ts"
 			],
 			"settings": {
 				"remote.autoForwardPorts": false,
