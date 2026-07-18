@@ -28,7 +28,7 @@
 
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import ComboBox from '$components/ComboBox/ComboBox.svelte';
+	import CustomerWorkloadCombo from '$lib/components/CustomerWorkloadCombo.svelte';
 	import FormControl from '$components/FormControl/FormControl.svelte';
 	import { create_submit_enhance } from '$components/FormControl/FormControl.svelte';
 	import type { Validated } from '$components/FormControl/validation';
@@ -57,12 +57,6 @@
 			return value.toISOString().slice(0, 10);
 		}
 		return value;
-	}
-
-	async function search_customer_workload(query: string): Promise<Match[]> {
-		const response = await fetch(`/api/customer-workload?q=${encodeURIComponent(query)}`);
-		if (!response.ok) throw new Error('customer_workload_search_failed');
-		return response.json();
 	}
 
 	function initial_match(event: Event): Match | undefined {
@@ -103,7 +97,7 @@
 		validation={form?.validation}
 	>
 		{#snippet input({ name, label = '' })}
-			<ComboBox {name} {label} value={initial_match(data)} search={search_customer_workload} />
+			<CustomerWorkloadCombo {name} {label} value={initial_match(data)} />
 		{/snippet}
 	</FormControl>
 	<FormControl name="outcome" value={event?.outcome} validation={form?.validation}>
