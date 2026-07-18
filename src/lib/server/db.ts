@@ -1334,300 +1334,350 @@ const WORKLOADS: Array<Workload> = [
 	{
 		workload: 'ad060232-8b52-4ada-b6b4-eb64f0a1c0e9' as ID,
 		label: 'brightfield_logistics_customer_portal_redesign',
+		customer: { customer: 'de77dd4e-fc4f-4bc6-a756-16e16f38a342' as ID, name: 'Brightfield Logistics', label: 'brightfield_logistics' },
 		name: 'Customer portal redesign',
 		size: 4
 	},
 	{
 		workload: '86114daf-5d32-4509-a69d-fb9bba43be92' as ID,
 		label: 'verdant_foods_co_q3_supply_chain_audit',
+		customer: { customer: 'ab079df2-d638-43e7-9582-5460dd797492' as ID, name: 'Verdant Foods Co', label: 'verdant_foods_co' },
 		name: 'Q3 supply chain audit',
 		size: 7
 	},
 	{
 		workload: '32e160bb-1822-4a0a-832a-6050c49f326d' as ID,
 		label: 'halcyon_biotech_inventory_tracking_rollout',
+		customer: { customer: '3e1b97cc-2b1f-4aaa-9d39-049f711364fd' as ID, name: 'Halcyon Biotech', label: 'halcyon_biotech' },
 		name: 'Inventory tracking rollout',
 		size: 10
 	},
 	{
 		workload: '431d0889-939c-4627-a44f-8dd10bc935bd' as ID,
 		label: 'halcyon_biotech_mobile_app_v2_launch',
+		customer: { customer: '3e1b97cc-2b1f-4aaa-9d39-049f711364fd' as ID, name: 'Halcyon Biotech', label: 'halcyon_biotech' },
 		name: 'Mobile app v2 launch',
 		size: 13
 	},
 	{
 		workload: '05fa343f-2216-4dd4-a491-c93fcbde7bf1' as ID,
 		label: 'halcyon_biotech_data_warehouse_migration',
+		customer: { customer: '3e1b97cc-2b1f-4aaa-9d39-049f711364fd' as ID, name: 'Halcyon Biotech', label: 'halcyon_biotech' },
 		name: 'Data warehouse migration',
 		size: 16
 	},
 	{
 		workload: 'edc90149-a0ea-4fc0-b845-5dec96582454' as ID,
 		label: 'lumen_optics_group_carbon_footprint_initiative',
+		customer: { customer: 'fcac0d47-6cc4-4236-9683-84e6ef4c2aae' as ID, name: 'Lumen Optics Group', label: 'lumen_optics_group' },
 		name: 'Carbon footprint initiative',
 		size: 19
 	},
 	{
 		workload: '30c7c30e-a2d7-41c7-bfda-14ea686229e3' as ID,
 		label: 'lumen_optics_group_vendor_onboarding_overhaul',
+		customer: { customer: 'fcac0d47-6cc4-4236-9683-84e6ef4c2aae' as ID, name: 'Lumen Optics Group', label: 'lumen_optics_group' },
 		name: 'Vendor onboarding overhaul',
 		size: 2
 	},
 	{
 		workload: '04775c4d-cd5d-4983-a766-ce33048cdaa3' as ID,
 		label: 'sable_and_pine_furnishings_fraud_detection_upgrade',
+		customer: { customer: 'ff7d3b89-c653-460b-b1e9-7aef5d3ca901' as ID, name: 'Sable & Pine Furnishings', label: 'sable_and_pine_furnishings' },
 		name: 'Fraud detection upgrade',
 		size: 5
 	},
 	{
 		workload: '0a85062c-759c-435a-9d0f-55a2af90fe61' as ID,
 		label: 'sable_and_pine_furnishings_employee_wellness_program',
+		customer: { customer: 'ff7d3b89-c653-460b-b1e9-7aef5d3ca901' as ID, name: 'Sable & Pine Furnishings', label: 'sable_and_pine_furnishings' },
 		name: 'Employee wellness program',
 		size: 8
 	},
 	{
 		workload: '98e677d7-5b01-4082-b9e3-44de13ad5d11' as ID,
 		label: 'stonebridge_capital_regional_expansion_study',
+		customer: { customer: '76b267b3-8308-473b-a4ec-d1bf2008e4b2' as ID, name: 'Stonebridge Capital', label: 'stonebridge_capital' },
 		name: 'Regional expansion study',
 		size: 11
 	},
 	{
 		workload: 'fd18edac-c447-4ccf-8d83-b0b90bdc316e' as ID,
 		label: 'stonebridge_capital_api_gateway_modernization',
+		customer: { customer: '76b267b3-8308-473b-a4ec-d1bf2008e4b2' as ID, name: 'Stonebridge Capital', label: 'stonebridge_capital' },
 		name: 'API gateway modernization',
 		size: 14
 	},
 	{
 		workload: '830132ac-0111-4d4d-be91-85570edb6258' as ID,
 		label: 'cascadia_renewables_payroll_system_migration',
+		customer: { customer: 'b80ea7bc-49f7-4be0-b036-a5df1413831a' as ID, name: 'Cascadia Renewables', label: 'cascadia_renewables' },
 		name: 'Payroll system migration',
 		size: 17
 	},
 	{
 		workload: 'a14ccdeb-4129-441d-851b-1ab83e9867de' as ID,
 		label: 'birchwood_pharmaceuticals_brand_refresh_campaign',
+		customer: { customer: 'f037729b-be76-4d1c-960d-2c7d2ef12be4' as ID, name: 'Birchwood Pharmaceuticals', label: 'birchwood_pharmaceuticals' },
 		name: 'Brand refresh campaign',
 		size: 20
 	},
 	{
 		workload: 'a0311e56-0abe-44e0-87ac-668ebe81507a' as ID,
 		label: 'falcon_crest_aerospace_cold_storage_expansion',
+		customer: { customer: 'bf53bdce-b1df-466f-9d90-135943c8cd5c' as ID, name: 'Falcon Crest Aerospace', label: 'falcon_crest_aerospace' },
 		name: 'Cold storage expansion',
 		size: 3
 	},
 	{
 		workload: '7d39ecc6-c5fd-4527-8c81-64e3d9b69405' as ID,
 		label: 'falcon_crest_aerospace_predictive_maintenance_pilot',
+		customer: { customer: 'bf53bdce-b1df-466f-9d90-135943c8cd5c' as ID, name: 'Falcon Crest Aerospace', label: 'falcon_crest_aerospace' },
 		name: 'Predictive maintenance pilot',
 		size: 6
 	},
 	{
 		workload: '29b98a62-095f-4c46-9146-e0c43e58fb82' as ID,
 		label: 'outpost_telecom_customer_loyalty_platform',
+		customer: { customer: '9cd111d8-df95-448e-a13e-f0f5cb5d9813' as ID, name: 'Outpost Telecom', label: 'outpost_telecom' },
 		name: 'Customer loyalty platform',
 		size: 9
 	},
 	{
 		workload: '5c040725-82ba-4ba4-aa6d-ec8a9750c3a0' as ID,
 		label: 'redwood_civic_bank_internal_tooling_consolidation',
+		customer: { customer: 'c3c67ade-5be8-4d3c-a670-b5c36abf84d4' as ID, name: 'Redwood Civic Bank', label: 'redwood_civic_bank' },
 		name: 'Internal tooling consolidation',
 		size: 12
 	},
 	{
 		workload: 'ca040012-9717-4306-bf20-e937de26c9ba' as ID,
 		label: 'redwood_civic_bank_cybersecurity_hardening_sprint',
+		customer: { customer: 'c3c67ade-5be8-4d3c-a670-b5c36abf84d4' as ID, name: 'Redwood Civic Bank', label: 'redwood_civic_bank' },
 		name: 'Cybersecurity hardening sprint',
 		size: 15
 	},
 	{
 		workload: 'f8c91d36-c111-420f-9a5f-88eb0b6b115d' as ID,
 		label: 'redwood_civic_bank_sustainability_reporting_tool',
+		customer: { customer: 'c3c67ade-5be8-4d3c-a670-b5c36abf84d4' as ID, name: 'Redwood Civic Bank', label: 'redwood_civic_bank' },
 		name: 'Sustainability reporting tool',
 		size: 18
 	},
 	{
 		workload: 'fd17e0c4-2a81-460a-85dd-118ed3e472b0' as ID,
 		label: 'amberlight_studios_warehouse_automation_pilot',
+		customer: { customer: 'b975eee7-1063-42f1-8857-81befbde83a9' as ID, name: 'Amberlight Studios', label: 'amberlight_studios' },
 		name: 'Warehouse automation pilot',
 		size: 21
 	},
 	{
 		workload: '023c289c-9fa2-4a3c-861d-fdd064558cb7' as ID,
 		label: 'amberlight_studios_pricing_model_overhaul',
+		customer: { customer: 'b975eee7-1063-42f1-8857-81befbde83a9' as ID, name: 'Amberlight Studios', label: 'amberlight_studios' },
 		name: 'Pricing model overhaul',
 		size: 4
 	},
 	{
 		workload: '7f47bfa0-1955-47da-a8a0-ab6633acd21c' as ID,
 		label: 'thistledown_apparel_talent_acquisition_platform',
+		customer: { customer: '6ee6917b-afe2-4567-b551-4e46b6c3d26d' as ID, name: 'Thistledown Apparel', label: 'thistledown_apparel' },
 		name: 'Talent acquisition platform',
 		size: 7
 	},
 	{
 		workload: 'fe6ac4f6-2158-47fa-ac42-b6d56d009b6e' as ID,
 		label: 'thistledown_apparel_cloud_cost_optimization',
+		customer: { customer: '6ee6917b-afe2-4567-b551-4e46b6c3d26d' as ID, name: 'Thistledown Apparel', label: 'thistledown_apparel' },
 		name: 'Cloud cost optimization',
 		size: 10
 	},
 	{
 		workload: '4ae71911-fb39-4f4f-93ef-5805ee885ebe' as ID,
 		label: 'thistledown_apparel_field_service_app_rebuild',
+		customer: { customer: '6ee6917b-afe2-4567-b551-4e46b6c3d26d' as ID, name: 'Thistledown Apparel', label: 'thistledown_apparel' },
 		name: 'Field service app rebuild',
 		size: 13
 	},
 	{
 		workload: 'd98fa71f-0637-4a53-994c-1f87f9fd07ee' as ID,
 		label: 'vantage_point_consulting_compliance_documentation_push',
+		customer: { customer: 'bf5a4ace-1fed-4a73-ba17-464bbfa49467' as ID, name: 'Vantage Point Consulting', label: 'vantage_point_consulting' },
 		name: 'Compliance documentation push',
 		size: 16
 	},
 	{
 		workload: '3c07c83a-8857-4390-b1d9-bdf96e0d32fc' as ID,
 		label: 'vantage_point_consulting_real_time_analytics_dashboard',
+		customer: { customer: 'bf5a4ace-1fed-4a73-ba17-464bbfa49467' as ID, name: 'Vantage Point Consulting', label: 'vantage_point_consulting' },
 		name: 'Real-time analytics dashboard',
 		size: 19
 	},
 	{
 		workload: '672ea8eb-9233-4af0-9265-e007e2aaf04b' as ID,
 		label: 'nimbus_cloud_systems_legacy_system_decommission',
+		customer: { customer: 'f574ae96-e08a-4c4a-8020-a4bb78faf39b' as ID, name: 'Nimbus Cloud Systems', label: 'nimbus_cloud_systems' },
 		name: 'Legacy system decommission',
 		size: 2
 	},
 	{
 		workload: '3f4d4571-02bf-48a6-9bf5-8e8cc44449ca' as ID,
 		label: 'meridian_health_group_multi_region_failover_setup',
+		customer: { customer: 'fe682a0b-4aef-40af-b21e-120d50cb85bc' as ID, name: 'Meridian Health Group', label: 'meridian_health_group' },
 		name: 'Multi-region failover setup',
 		size: 5
 	},
 	{
 		workload: '3e4e9f10-4dff-4766-a494-022fa210e748' as ID,
 		label: 'meridian_health_group_subscription_billing_revamp',
+		customer: { customer: 'fe682a0b-4aef-40af-b21e-120d50cb85bc' as ID, name: 'Meridian Health Group', label: 'meridian_health_group' },
 		name: 'Subscription billing revamp',
 		size: 8
 	},
 	{
 		workload: 'e4b2d68b-c024-4ac5-be24-7dd7af5819a4' as ID,
 		label: 'meridian_health_group_partner_integration_program',
+		customer: { customer: 'fe682a0b-4aef-40af-b21e-120d50cb85bc' as ID, name: 'Meridian Health Group', label: 'meridian_health_group' },
 		name: 'Partner integration program',
 		size: 11
 	},
 	{
 		workload: '136d7ea6-2499-41d0-89cb-b42d46e516d1' as ID,
 		label: 'foxglove_cosmetics_accessibility_compliance_audit',
+		customer: { customer: 'a9f3d49c-ad7c-4864-a5a2-4900b102536f' as ID, name: 'Foxglove Cosmetics', label: 'foxglove_cosmetics' },
 		name: 'Accessibility compliance audit',
 		size: 14
 	},
 	{
 		workload: 'e1184883-ae1d-4101-992d-ed1fc28d0a87' as ID,
 		label: 'foxglove_cosmetics_voice_of_customer_research',
+		customer: { customer: 'a9f3d49c-ad7c-4864-a5a2-4900b102536f' as ID, name: 'Foxglove Cosmetics', label: 'foxglove_cosmetics' },
 		name: 'Voice-of-customer research',
 		size: 17
 	},
 	{
 		workload: 'b136a075-c13d-4acc-9766-86bccd7c454e' as ID,
 		label: 'ledger_and_vine_accounting_supply_forecasting_model',
+		customer: { customer: 'f8105a8f-d318-4993-a8e3-e4320e022af9' as ID, name: 'Ledger & Vine Accounting', label: 'ledger_and_vine_accounting' },
 		name: 'Supply forecasting model',
 		size: 20
 	},
 	{
 		workload: 'd2bf8d94-c8c1-47aa-9171-9a39a332165e' as ID,
 		label: 'ledger_and_vine_accounting_data_privacy_remediation',
+		customer: { customer: 'f8105a8f-d318-4993-a8e3-e4320e022af9' as ID, name: 'Ledger & Vine Accounting', label: 'ledger_and_vine_accounting' },
 		name: 'Data privacy remediation',
 		size: 3
 	},
 	{
 		workload: '94b64800-9de5-4e79-8f9c-c5cb58be448e' as ID,
 		label: 'greywolf_defense_corp_onboarding_flow_simplification',
+		customer: { customer: '83fc76c4-df45-4205-91a6-90fef01e3f0a' as ID, name: 'Greywolf Defense Corp', label: 'greywolf_defense_corp' },
 		name: 'Onboarding flow simplification',
 		size: 6
 	},
 	{
 		workload: '3f5c4cc9-3c7d-470e-9253-1e7e451c0827' as ID,
 		label: 'saltmarsh_agriculture_energy_efficiency_retrofit',
+		customer: { customer: 'ce5fa0a9-c5ad-4174-8da5-66739fb1a73e' as ID, name: 'Saltmarsh Agriculture', label: 'saltmarsh_agriculture' },
 		name: 'Energy efficiency retrofit',
 		size: 9
 	},
 	{
 		workload: 'ebdff0c2-05a0-49eb-a34b-bf13a57599eb' as ID,
 		label: 'saltmarsh_agriculture_retail_pos_upgrade',
+		customer: { customer: 'ce5fa0a9-c5ad-4174-8da5-66739fb1a73e' as ID, name: 'Saltmarsh Agriculture', label: 'saltmarsh_agriculture' },
 		name: 'Retail POS upgrade',
 		size: 12
 	},
 	{
 		workload: 'b7f9c571-871d-4aff-ac5c-984f1c2ee79d' as ID,
 		label: 'saltmarsh_agriculture_knowledge_base_consolidation',
+		customer: { customer: 'ce5fa0a9-c5ad-4174-8da5-66739fb1a73e' as ID, name: 'Saltmarsh Agriculture', label: 'saltmarsh_agriculture' },
 		name: 'Knowledge base consolidation',
 		size: 15
 	},
 	{
 		workload: '15eed817-5d89-4b44-aeee-7aa9ec508496' as ID,
 		label: 'ironwood_construction_quality_assurance_automation',
+		customer: { customer: 'a4617176-4d81-44cd-ac1e-4f3353c75983' as ID, name: 'Ironwood Construction', label: 'ironwood_construction' },
 		name: 'Quality assurance automation',
 		size: 18
 	},
 	{
 		workload: 'd66b1104-3711-46c2-958f-6ea6d84a2fd7' as ID,
 		label: 'driftline_apparel_co_international_tax_compliance',
+		customer: { customer: '6482c3ab-ab0f-47b8-8512-6d3bee054feb' as ID, name: 'Driftline Apparel Co', label: 'driftline_apparel_co' },
 		name: 'International tax compliance',
 		size: 21
 	},
 	{
 		workload: '7afa7cd3-7ae8-44c9-b4a3-475de4403d97' as ID,
 		label: 'cinderpeak_robotics_customer_churn_analysis',
+		customer: { customer: 'e3c36155-777c-4943-982a-b0b50350099c' as ID, name: 'Cinderpeak Robotics', label: 'cinderpeak_robotics' },
 		name: 'Customer churn analysis',
 		size: 4
 	},
 	{
 		workload: '306e9e86-ad07-4a78-9e0c-7c4670c743bd' as ID,
 		label: 'cinderpeak_robotics_fleet_electrification_pilot',
+		customer: { customer: 'e3c36155-777c-4943-982a-b0b50350099c' as ID, name: 'Cinderpeak Robotics', label: 'cinderpeak_robotics' },
 		name: 'Fleet electrification pilot',
 		size: 7
 	},
 	{
 		workload: 'a3f6c813-a715-461b-9c2f-3c9c07782e27' as ID,
 		label: 'mosswood_publishing_document_management_overhaul',
+		customer: { customer: 'e66a7231-0881-4f16-ad13-1124a4975881' as ID, name: 'Mosswood Publishing', label: 'mosswood_publishing' },
 		name: 'Document management overhaul',
 		size: 10
 	},
 	{
 		workload: '8e7034e4-78a7-44c3-a05d-73dc4c6e7f9d' as ID,
 		label: 'vault_and_key_cybersecurity_site_reliability_initiative',
+		customer: { customer: '18a5547f-171d-45ba-9e11-5508ffca30e3' as ID, name: 'Vault & Key Cybersecurity', label: 'vault_and_key_cybersecurity' },
 		name: 'Site reliability initiative',
 		size: 13
 	},
 	{
 		workload: 'dd4233b5-492d-41c4-86a9-b79569f37f89' as ID,
 		label: 'highmark_furniture_co_marketing_attribution_model',
+		customer: { customer: '25f529a0-c2f1-4f91-96c1-92fa9e5db79f' as ID, name: 'Highmark Furniture Co', label: 'highmark_furniture_co' },
 		name: 'Marketing attribution model',
 		size: 16
 	},
 	{
 		workload: 'c311f2ea-f678-4214-bc8c-16c0c2cf4254' as ID,
 		label: 'lanternfish_seafood_procurement_platform_rebuild',
+		customer: { customer: 'a0082bce-82e0-42db-b0ba-16697c77c55d' as ID, name: 'Lanternfish Seafood', label: 'lanternfish_seafood' },
 		name: 'Procurement platform rebuild',
 		size: 19
 	},
 	{
 		workload: '05c032f9-f994-4e89-876e-6862a5a64323' as ID,
 		label: 'crestline_motors_workforce_scheduling_system',
+		customer: { customer: '71251deb-6d98-41a6-8d3f-3ee395c41a78' as ID, name: 'Crestline Motors', label: 'crestline_motors' },
 		name: 'Workforce scheduling system',
 		size: 2
 	},
 	{
 		workload: 'a3bcd48f-dc02-44a7-9bba-86099eb063ed' as ID,
 		label: 'crestline_motors_product_catalog_migration',
+		customer: { customer: '71251deb-6d98-41a6-8d3f-3ee395c41a78' as ID, name: 'Crestline Motors', label: 'crestline_motors' },
 		name: 'Product catalog migration',
 		size: 5
 	},
 	{
 		workload: 'd5a7174b-2ea5-4afc-89dc-92a8fe1e1728' as ID,
 		label: 'pinegrove_timber_co_disaster_recovery_drill_program',
+		customer: { customer: '7531b415-ca8f-4541-bc5c-effd892935ad' as ID, name: 'Pinegrove Timber Co', label: 'pinegrove_timber_co' },
 		name: 'Disaster recovery drill program',
 		size: 8
 	},
 	{
 		workload: 'f2c02e19-4d4f-46c3-8ce5-0d6d4b5d3c0c' as ID,
 		label: 'aldergate_pharmaceuticals_network_infrastructure_refresh',
+		customer: { customer: '921b1085-8a48-4fce-b9fe-f2a0fc75905f' as ID, name: 'Aldergate Pharmaceuticals', label: 'aldergate_pharmaceuticals' },
 		name: 'Network infrastructure refresh',
 		size: 11
 	}

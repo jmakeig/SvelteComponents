@@ -68,7 +68,7 @@ export async function match_customer_workload(input: string) {
 		input
 	);
 	return matches.map((item) => {
-		const value = 'customer' in item ? `customer_${item.customer}` : `workload_${item.workload}`;
+		const value = 'workload' in item ? `workload_${item.workload}` : `customer_${item.customer}`;
 		return { name: item.name, label: item.label, value };
 	});
 }

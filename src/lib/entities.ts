@@ -65,7 +65,7 @@ export type Segment = 'select' | 'enterprise' | 'corporate' | 'smb';
 
 export type Customer = Entity<'customer'> & { segment: Optional<Segment> };
 
-export type Workload = Entity<'workload'> & { size: Optional<number> };
+export type Workload = Entity<'workload'> & { customer: Ref<'customer'>; size: Optional<number> };
 
 type BaseEvent = {
 	event: ID;
