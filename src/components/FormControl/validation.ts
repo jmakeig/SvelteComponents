@@ -28,7 +28,11 @@ export type Validated<Out> =
 export class Validation<Out> {
 	#issues: Issue[] = [];
 
-	add(message: Issue['message'], property?: PropertyKey | Path, code?: Issue['code']): Validation<Out> {
+	add(
+		message: Issue['message'],
+		property?: PropertyKey | Path,
+		code?: Issue['code']
+	): Validation<Out> {
 		this.#issues.push({
 			message,
 			path: property ? [...(Array.isArray(property) ? property : [property])] : [],
@@ -78,7 +82,7 @@ export class Validation<Out> {
 		return this.issues(path, code).length > 0;
 	}
 
-	coded(code?: Issue['code']) : boolean {
+	coded(code?: Issue['code']): boolean {
 		return this.has(undefined, code);
 	}
 
