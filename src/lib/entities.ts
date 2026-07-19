@@ -93,6 +93,28 @@ export function parse_date_local(iso_date: string | null): Date {
 }
 
 /**
+ * Human-readable and URL-friendly transformation of a `name`, e.g. for `Entity.label`.
+ * @param name
+ */
+export function slug(name: string): string {
+	const maxLength = 80;
+	let len = 0,
+		index = 0,
+		slug = '';
+	// https://stackoverflow.com/a/66721429
+	const tokens = name.split(/[^\p{L}\p{N}]+/gu);
+	while (len < maxLength && index < tokens.length) {
+		len += tokens[index].length;
+		if (tokens[index].length > 0) {
+			slug += (index > 0 ? '-' : '') + tokens[index++].toLowerCase();
+		} else {
+			index++;
+		}
+	}
+	return slug;
+}
+
+/**
  * Strict structural and value type and existence validation.
  * This doesn’t check contraints like uniqueness or referential integrity.
  * Those need to happen closer to the database.
@@ -167,6 +189,58 @@ export function validate_event(pending: unknown, is_new: boolean = false): Valid
 		return { data: pending, validation };
 	}
 	return { data: event };
+}
+
+/**
+ * Strict structural and value type and existence validation for `Customer`.
+ * This doesn’t check contraints like uniqueness. Those need to happen closer to the database.
+ *
+ * @param pending Something with a `Customer`-like shape
+ * @param is_new Optional flag to specify whether the intent is to validate a new entry, which will have a `null` `customer` identifier
+ * @returns A strongly typed `Customer` instance or the original `pending` input and the `Validation<Customer>` instance
+ */
+export function validate_customer(pending: unknown, is_new: boolean = false): Validated<Customer> {
+	const validation = new Validation<Customer>();
+	// @ts-expect-error Same "clever or evil" construction pattern as validate_event.
+	const customer: Customer = {};
+	if (undefined === pending || null === pending || 'object' !== typeof pending) {
+		validation.add('Customer must exist');
+	} else {
+		const p = pending as Record<string, unknown>;
+		if ('customer' in p && 'string' === typeof p.customer && '' !== p.customer) {
+			// @ts-expect-error `customer` is readonly on Customer (built from Entity<'customer'>,
+			// unlike Event.event); this is the one place it's legitimately assigned.
+			customer.customer = p.customer as ID;
+		} else if (!is_new) {
+			validation.add('Unknown customer', 'customer');
+		} else {
+			// Careful! Whether the server accepts a client-supplied id is a constraint
+			// enforced at the db layer, not a shape-validation concern.
+			// @ts-expect-error See above.
+			customer.customer = null as unknown as ID;
+		}
+		if ('name' in p && 'string' === typeof p.name && '' !== p.name.trim()) {
+			customer.name = p.name.trim();
+			// label isn’t independently submitted; it’s always derived from name.
+			customer.label = slug(customer.name);
+		} else {
+			validation.add('Name is required', 'name');
+		}
+		if ('segment' in p && 'string' === typeof p.segment && '' !== p.segment) {
+			const segments: Segment[] = ['select', 'enterprise', 'corporate', 'smb'];
+			if ((segments as string[]).includes(p.segment)) {
+				customer.segment = p.segment as Segment;
+			} else {
+				validation.add('Invalid segment', 'segment');
+			}
+		} else {
+			customer.segment = null;
+		}
+	}
+	if (validation.has()) {
+		return { data: pending, validation };
+	}
+	return { data: customer };
 }
 /**********************************************************************/
 /*

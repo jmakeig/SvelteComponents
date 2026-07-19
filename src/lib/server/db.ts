@@ -1954,6 +1954,40 @@ export const db = {
 		const q = query.toLowerCase();
 		if (q.startsWith('select customer_workload where like')) {
 			return _search([...CUSTOMERS, ...WORKLOADS], input as string) as Out;
+		} else if (q.startsWith('select customer where')) {
+			const id = input as ID;
+			const results = CUSTOMERS.filter((customer) => id === customer.customer);
+			return (1 === results.length ? results[0] : null) as Out;
+		} else if (q.startsWith('select customer')) {
+			return [...CUSTOMERS].sort((a, b) => a.name.localeCompare(b.name)) as Out;
+		} else if (q.startsWith('insert into customer')) {
+			const pending = input as Customer;
+			// customer is a generated column: the caller may never set it directly.
+			if (pending.customer) {
+				throw new ConstraintError('Cannot set id when creating a new customer');
+			}
+			const id = crypto.randomUUID() as ID;
+			// PK uniqueness is always enforced, however the id was sourced.
+			if (CUSTOMERS.some((c) => c.customer === id)) {
+				throw new ConstraintError(`Customer ${id} already exists`);
+			}
+			const customer = { ...pending, customer: id };
+			CUSTOMERS.push(customer);
+			return customer as Out;
+		} else if (q.startsWith('update customer')) {
+			const customer = input as Customer;
+			const index = CUSTOMERS.findIndex((c) => c.customer === customer.customer);
+			// UPDATE ... RETURNING customer: an empty result means nothing matched.
+			if (index < 0) return null as Out;
+			CUSTOMERS[index] = customer;
+			return CUSTOMERS[index] as Out;
+		} else if (q.startsWith('delete customer')) {
+			const id = input as ID;
+			const index = CUSTOMERS.findIndex((c) => c.customer === id);
+			// DELETE ... RETURNING customer: an empty result means nothing matched.
+			if (index < 0) return null as Out;
+			const [deleted] = CUSTOMERS.splice(index, 1);
+			return deleted as Out;
 		} else if (q.startsWith('select event where')) {
 			const id = input as ID;
 			const results = EVENTS.filter((event) => id === event.event);
