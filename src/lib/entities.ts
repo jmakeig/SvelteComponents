@@ -40,26 +40,14 @@ type Entity<Name extends string> = {
 	name: string;
 };
 
-type Ref<Name extends string> = Omit<Entity<Name>, 'label' | 'name'> &
-	Partial<Pick<Entity<Name>, 'label' | 'name'>>;
-
-// /**
-//  * A `FormData`-ready  reference to another entity.
-//  *
-//  * @usage ```
-//  * 		// TODO
-//  * ```
-//  */
-// interface Ref<Name extends string> {
-// 	/**
-// 	 * The type of entity. This can usually be inferred from the property name,
-// 	 * but may be necessary for a union type property that can accept multiple
-// 	 * entity types.
-// 	 */
-// 	_type?: Name;
-// 	/** The unique identifier of the referenced entity */
-// 	_id: ID;
-// }
+/**
+ * A reference to another entity, e.g. `Event.customer`. Structurally identical to `Entity<Name>` —
+ * the name exists to communicate role (a reference, not the entity itself) even though there's
+ * currently no structural difference. `name`/`label` are required, matching a genuinely resolved
+ * reference. A pending, not-yet-resolved reference (just an id) is intentionally not representable
+ * here; `validate_event` builds one anyway, using the same escape hatch as its `Event` construction.
+ */
+type Ref<Name extends string> = Entity<Name>;
 
 export type Segment = 'select' | 'enterprise' | 'corporate' | 'smb';
 
@@ -132,10 +120,12 @@ export function validate_event(pending: unknown, is_new: boolean = false): Valid
 		}
 		if ('customer' in p || 'workload' in p) {
 			if ('customer' in p && 'string' === typeof p.customer && !('workload' in p)) {
+				// @ts-expect-error Resolved (name/label filled in) downstream, in db.ts's resolve_event_refs.
 				event.customer = {
 					customer: p.customer as ID
 				};
 			} else if ('workload' in p && 'string' === typeof p.workload && !('customer' in p)) {
+				// @ts-expect-error Resolved (name/label filled in) downstream, in db.ts's resolve_event_refs.
 				event.workload = {
 					workload: p.workload as ID
 				};

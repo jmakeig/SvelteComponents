@@ -7,7 +7,7 @@ export const NOT_FOUND = 'not_found';
 
 /**
  * Retrieves an ordered collection of `Event` instances.
- * 
+ *
  * @returns A collection of `Event` instances or an empty `Array`
  */
 export async function list_events(): Promise<Array<Event>> {
@@ -68,7 +68,18 @@ export async function match_customer_workload(input: string) {
 		input
 	);
 	return matches.map((item) => {
-		const value = 'workload' in item ? `workload_${item.workload}` : `customer_${item.customer}`;
-		return { name: item.name, label: item.label, value };
+		if ('workload' in item) {
+			return {
+				name: item.name,
+				label: item.label,
+				value: `workload_${item.workload}`,
+				ref: {
+					name: item.customer.name ?? '',
+					label: item.customer.label,
+					value: `customer_${item.customer.customer}`
+				}
+			};
+		}
+		return { name: item.name, label: item.label, value: `customer_${item.customer}` };
 	});
 }

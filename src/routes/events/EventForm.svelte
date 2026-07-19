@@ -59,13 +59,24 @@
 		return value;
 	}
 
+	/**
+	 * TODO: Only ever called with `data` (the loaded `Event`), never `form?.data`, so the
+	 * combo's selection is silently lost when a submission fails and redisplays — unlike
+	 * `outcome`/`happened_at`, which do read from `form?.data ?? data`. Fixing that means
+	 * feeding a failed submission's `customer`/`workload` through here too, which is a
+	 * `Ref` in name only at that point: a client-side/shape validation failure carries a raw
+	 * string id (`unmarshall`'s output, unparsed), while a server-side db-constraint failure
+	 * (see `resolve_event_refs` in db.ts) carries a `{customer: id}`/`{workload: id}` object
+	 * with no `name`/`label` yet — neither matches `Ref`'s (now `Entity`'s) required shape.
+	 * Whichever shape, this needs to degrade gracefully rather than assume a resolved `Ref`.
+	 */
 	function initial_match(event: Event): Match | undefined {
 		if ('customer' in event && event.customer) {
-			const { customer: id, name = 'xxxxxx', label } = event.customer;
+			const { customer: id, name, label } = event.customer;
 			return { name, label, value: `customer_${id}` };
 		}
 		if ('workload' in event && event.workload) {
-			const { workload: id, name = '', label } = event.workload;
+			const { workload: id, name, label } = event.workload;
 			return { name, label, value: `workload_${id}` };
 		}
 		return undefined;
@@ -92,7 +103,7 @@
 	<input type="hidden" name="event" value={event?.event} />
 	<FormControl
 		name="customer_workload"
-		label="Which"
+		label="Entity"
 		value={undefined}
 		validation={form?.validation}
 	>
