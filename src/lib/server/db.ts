@@ -1,4 +1,4 @@
-import type { Customer, Event, ID, Segment, Workload } from '$lib/entities';
+import type { Customer, Event, ID, Segment, Stage, Workload } from '$lib/entities';
 import ufuzzy from '@leeoniya/ufuzzy';
 
 const EVENTS: Array<Event> = [
@@ -1034,6 +1034,15 @@ const SEGMENTS: Array<Segment> = [
 	{ name: 'SMB', value: 'smb' }
 ];
 
+const STAGES: Array<Stage> = [
+	{ name: 'Discovery', value: 0 },
+	{ name: 'Qualification', value: 1 },
+	{ name: 'Proposal', value: 2 },
+	{ name: 'Negotiation', value: 3 },
+	{ name: 'Closed Won', value: 4 },
+	{ name: 'Closed Lost', value: 99 }
+];
+
 const CUSTOMERS: Array<Customer> = [
 	{
 		customer: '6b47e099-e412-4de5-a2c2-af570a5131a0' as ID,
@@ -1347,7 +1356,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'brightfield_logistics'
 		},
 		name: 'Customer portal redesign',
-		size: 4
+		size: 4,
+		stage: { name: 'Discovery', value: 0 }
 	},
 	{
 		workload: '86114daf-5d32-4509-a69d-fb9bba43be92' as ID,
@@ -1358,7 +1368,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'verdant_foods_co'
 		},
 		name: 'Q3 supply chain audit',
-		size: 7
+		size: 7,
+		stage: { name: 'Qualification', value: 1 }
 	},
 	{
 		workload: '32e160bb-1822-4a0a-832a-6050c49f326d' as ID,
@@ -1369,7 +1380,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'halcyon_biotech'
 		},
 		name: 'Inventory tracking rollout',
-		size: 10
+		size: 10,
+		stage: { name: 'Proposal', value: 2 }
 	},
 	{
 		workload: '431d0889-939c-4627-a44f-8dd10bc935bd' as ID,
@@ -1380,7 +1392,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'halcyon_biotech'
 		},
 		name: 'Mobile app v2 launch',
-		size: 13
+		size: 13,
+		stage: { name: 'Negotiation', value: 3 }
 	},
 	{
 		workload: '05fa343f-2216-4dd4-a491-c93fcbde7bf1' as ID,
@@ -1391,7 +1404,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'halcyon_biotech'
 		},
 		name: 'Data warehouse migration',
-		size: 16
+		size: 16,
+		stage: { name: 'Closed Won', value: 4 }
 	},
 	{
 		workload: 'edc90149-a0ea-4fc0-b845-5dec96582454' as ID,
@@ -1402,7 +1416,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'lumen_optics_group'
 		},
 		name: 'Carbon footprint initiative',
-		size: 19
+		size: 19,
+		stage: { name: 'Closed Lost', value: 99 }
 	},
 	{
 		workload: '30c7c30e-a2d7-41c7-bfda-14ea686229e3' as ID,
@@ -1413,7 +1428,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'lumen_optics_group'
 		},
 		name: 'Vendor onboarding overhaul',
-		size: 2
+		size: 2,
+		stage: { name: 'Discovery', value: 0 }
 	},
 	{
 		workload: '04775c4d-cd5d-4983-a766-ce33048cdaa3' as ID,
@@ -1424,7 +1440,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'sable_and_pine_furnishings'
 		},
 		name: 'Fraud detection upgrade',
-		size: 5
+		size: 5,
+		stage: { name: 'Qualification', value: 1 }
 	},
 	{
 		workload: '0a85062c-759c-435a-9d0f-55a2af90fe61' as ID,
@@ -1435,7 +1452,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'sable_and_pine_furnishings'
 		},
 		name: 'Employee wellness program',
-		size: 8
+		size: 8,
+		stage: { name: 'Proposal', value: 2 }
 	},
 	{
 		workload: '98e677d7-5b01-4082-b9e3-44de13ad5d11' as ID,
@@ -1446,7 +1464,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'stonebridge_capital'
 		},
 		name: 'Regional expansion study',
-		size: 11
+		size: 11,
+		stage: { name: 'Negotiation', value: 3 }
 	},
 	{
 		workload: 'fd18edac-c447-4ccf-8d83-b0b90bdc316e' as ID,
@@ -1457,7 +1476,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'stonebridge_capital'
 		},
 		name: 'API gateway modernization',
-		size: 14
+		size: 14,
+		stage: { name: 'Closed Won', value: 4 }
 	},
 	{
 		workload: '830132ac-0111-4d4d-be91-85570edb6258' as ID,
@@ -1468,7 +1488,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'cascadia_renewables'
 		},
 		name: 'Payroll system migration',
-		size: 17
+		size: 17,
+		stage: { name: 'Closed Lost', value: 99 }
 	},
 	{
 		workload: 'a14ccdeb-4129-441d-851b-1ab83e9867de' as ID,
@@ -1479,7 +1500,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'birchwood_pharmaceuticals'
 		},
 		name: 'Brand refresh campaign',
-		size: 20
+		size: 20,
+		stage: { name: 'Discovery', value: 0 }
 	},
 	{
 		workload: 'a0311e56-0abe-44e0-87ac-668ebe81507a' as ID,
@@ -1490,7 +1512,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'falcon_crest_aerospace'
 		},
 		name: 'Cold storage expansion',
-		size: 3
+		size: 3,
+		stage: { name: 'Qualification', value: 1 }
 	},
 	{
 		workload: '7d39ecc6-c5fd-4527-8c81-64e3d9b69405' as ID,
@@ -1501,7 +1524,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'falcon_crest_aerospace'
 		},
 		name: 'Predictive maintenance pilot',
-		size: 6
+		size: 6,
+		stage: { name: 'Proposal', value: 2 }
 	},
 	{
 		workload: '29b98a62-095f-4c46-9146-e0c43e58fb82' as ID,
@@ -1512,7 +1536,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'outpost_telecom'
 		},
 		name: 'Customer loyalty platform',
-		size: 9
+		size: 9,
+		stage: { name: 'Negotiation', value: 3 }
 	},
 	{
 		workload: '5c040725-82ba-4ba4-aa6d-ec8a9750c3a0' as ID,
@@ -1523,7 +1548,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'redwood_civic_bank'
 		},
 		name: 'Internal tooling consolidation',
-		size: 12
+		size: 12,
+		stage: { name: 'Closed Won', value: 4 }
 	},
 	{
 		workload: 'ca040012-9717-4306-bf20-e937de26c9ba' as ID,
@@ -1534,7 +1560,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'redwood_civic_bank'
 		},
 		name: 'Cybersecurity hardening sprint',
-		size: 15
+		size: 15,
+		stage: { name: 'Closed Lost', value: 99 }
 	},
 	{
 		workload: 'f8c91d36-c111-420f-9a5f-88eb0b6b115d' as ID,
@@ -1545,7 +1572,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'redwood_civic_bank'
 		},
 		name: 'Sustainability reporting tool',
-		size: 18
+		size: 18,
+		stage: { name: 'Discovery', value: 0 }
 	},
 	{
 		workload: 'fd17e0c4-2a81-460a-85dd-118ed3e472b0' as ID,
@@ -1556,7 +1584,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'amberlight_studios'
 		},
 		name: 'Warehouse automation pilot',
-		size: 21
+		size: 21,
+		stage: { name: 'Qualification', value: 1 }
 	},
 	{
 		workload: '023c289c-9fa2-4a3c-861d-fdd064558cb7' as ID,
@@ -1567,7 +1596,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'amberlight_studios'
 		},
 		name: 'Pricing model overhaul',
-		size: 4
+		size: 4,
+		stage: { name: 'Proposal', value: 2 }
 	},
 	{
 		workload: '7f47bfa0-1955-47da-a8a0-ab6633acd21c' as ID,
@@ -1578,7 +1608,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'thistledown_apparel'
 		},
 		name: 'Talent acquisition platform',
-		size: 7
+		size: 7,
+		stage: { name: 'Negotiation', value: 3 }
 	},
 	{
 		workload: 'fe6ac4f6-2158-47fa-ac42-b6d56d009b6e' as ID,
@@ -1589,7 +1620,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'thistledown_apparel'
 		},
 		name: 'Cloud cost optimization',
-		size: 10
+		size: 10,
+		stage: { name: 'Closed Won', value: 4 }
 	},
 	{
 		workload: '4ae71911-fb39-4f4f-93ef-5805ee885ebe' as ID,
@@ -1600,7 +1632,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'thistledown_apparel'
 		},
 		name: 'Field service app rebuild',
-		size: 13
+		size: 13,
+		stage: { name: 'Closed Lost', value: 99 }
 	},
 	{
 		workload: 'd98fa71f-0637-4a53-994c-1f87f9fd07ee' as ID,
@@ -1611,7 +1644,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'vantage_point_consulting'
 		},
 		name: 'Compliance documentation push',
-		size: 16
+		size: 16,
+		stage: { name: 'Discovery', value: 0 }
 	},
 	{
 		workload: '3c07c83a-8857-4390-b1d9-bdf96e0d32fc' as ID,
@@ -1622,7 +1656,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'vantage_point_consulting'
 		},
 		name: 'Real-time analytics dashboard',
-		size: 19
+		size: 19,
+		stage: { name: 'Qualification', value: 1 }
 	},
 	{
 		workload: '672ea8eb-9233-4af0-9265-e007e2aaf04b' as ID,
@@ -1633,7 +1668,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'nimbus_cloud_systems'
 		},
 		name: 'Legacy system decommission',
-		size: 2
+		size: 2,
+		stage: { name: 'Proposal', value: 2 }
 	},
 	{
 		workload: '3f4d4571-02bf-48a6-9bf5-8e8cc44449ca' as ID,
@@ -1644,7 +1680,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'meridian_health_group'
 		},
 		name: 'Multi-region failover setup',
-		size: 5
+		size: 5,
+		stage: { name: 'Negotiation', value: 3 }
 	},
 	{
 		workload: '3e4e9f10-4dff-4766-a494-022fa210e748' as ID,
@@ -1655,7 +1692,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'meridian_health_group'
 		},
 		name: 'Subscription billing revamp',
-		size: 8
+		size: 8,
+		stage: { name: 'Closed Won', value: 4 }
 	},
 	{
 		workload: 'e4b2d68b-c024-4ac5-be24-7dd7af5819a4' as ID,
@@ -1666,7 +1704,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'meridian_health_group'
 		},
 		name: 'Partner integration program',
-		size: 11
+		size: 11,
+		stage: { name: 'Closed Lost', value: 99 }
 	},
 	{
 		workload: '136d7ea6-2499-41d0-89cb-b42d46e516d1' as ID,
@@ -1677,7 +1716,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'foxglove_cosmetics'
 		},
 		name: 'Accessibility compliance audit',
-		size: 14
+		size: 14,
+		stage: { name: 'Discovery', value: 0 }
 	},
 	{
 		workload: 'e1184883-ae1d-4101-992d-ed1fc28d0a87' as ID,
@@ -1688,7 +1728,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'foxglove_cosmetics'
 		},
 		name: 'Voice-of-customer research',
-		size: 17
+		size: 17,
+		stage: { name: 'Qualification', value: 1 }
 	},
 	{
 		workload: 'b136a075-c13d-4acc-9766-86bccd7c454e' as ID,
@@ -1699,7 +1740,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'ledger_and_vine_accounting'
 		},
 		name: 'Supply forecasting model',
-		size: 20
+		size: 20,
+		stage: { name: 'Proposal', value: 2 }
 	},
 	{
 		workload: 'd2bf8d94-c8c1-47aa-9171-9a39a332165e' as ID,
@@ -1710,7 +1752,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'ledger_and_vine_accounting'
 		},
 		name: 'Data privacy remediation',
-		size: 3
+		size: 3,
+		stage: { name: 'Negotiation', value: 3 }
 	},
 	{
 		workload: '94b64800-9de5-4e79-8f9c-c5cb58be448e' as ID,
@@ -1721,7 +1764,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'greywolf_defense_corp'
 		},
 		name: 'Onboarding flow simplification',
-		size: 6
+		size: 6,
+		stage: { name: 'Closed Won', value: 4 }
 	},
 	{
 		workload: '3f5c4cc9-3c7d-470e-9253-1e7e451c0827' as ID,
@@ -1732,7 +1776,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'saltmarsh_agriculture'
 		},
 		name: 'Energy efficiency retrofit',
-		size: 9
+		size: 9,
+		stage: { name: 'Closed Lost', value: 99 }
 	},
 	{
 		workload: 'ebdff0c2-05a0-49eb-a34b-bf13a57599eb' as ID,
@@ -1743,7 +1788,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'saltmarsh_agriculture'
 		},
 		name: 'Retail POS upgrade',
-		size: 12
+		size: 12,
+		stage: { name: 'Discovery', value: 0 }
 	},
 	{
 		workload: 'b7f9c571-871d-4aff-ac5c-984f1c2ee79d' as ID,
@@ -1754,7 +1800,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'saltmarsh_agriculture'
 		},
 		name: 'Knowledge base consolidation',
-		size: 15
+		size: 15,
+		stage: { name: 'Qualification', value: 1 }
 	},
 	{
 		workload: '15eed817-5d89-4b44-aeee-7aa9ec508496' as ID,
@@ -1765,7 +1812,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'ironwood_construction'
 		},
 		name: 'Quality assurance automation',
-		size: 18
+		size: 18,
+		stage: { name: 'Proposal', value: 2 }
 	},
 	{
 		workload: 'd66b1104-3711-46c2-958f-6ea6d84a2fd7' as ID,
@@ -1776,7 +1824,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'driftline_apparel_co'
 		},
 		name: 'International tax compliance',
-		size: 21
+		size: 21,
+		stage: { name: 'Negotiation', value: 3 }
 	},
 	{
 		workload: '7afa7cd3-7ae8-44c9-b4a3-475de4403d97' as ID,
@@ -1787,7 +1836,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'cinderpeak_robotics'
 		},
 		name: 'Customer churn analysis',
-		size: 4
+		size: 4,
+		stage: { name: 'Closed Won', value: 4 }
 	},
 	{
 		workload: '306e9e86-ad07-4a78-9e0c-7c4670c743bd' as ID,
@@ -1798,7 +1848,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'cinderpeak_robotics'
 		},
 		name: 'Fleet electrification pilot',
-		size: 7
+		size: 7,
+		stage: { name: 'Closed Lost', value: 99 }
 	},
 	{
 		workload: 'a3f6c813-a715-461b-9c2f-3c9c07782e27' as ID,
@@ -1809,7 +1860,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'mosswood_publishing'
 		},
 		name: 'Document management overhaul',
-		size: 10
+		size: 10,
+		stage: { name: 'Discovery', value: 0 }
 	},
 	{
 		workload: '8e7034e4-78a7-44c3-a05d-73dc4c6e7f9d' as ID,
@@ -1820,7 +1872,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'vault_and_key_cybersecurity'
 		},
 		name: 'Site reliability initiative',
-		size: 13
+		size: 13,
+		stage: { name: 'Qualification', value: 1 }
 	},
 	{
 		workload: 'dd4233b5-492d-41c4-86a9-b79569f37f89' as ID,
@@ -1831,7 +1884,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'highmark_furniture_co'
 		},
 		name: 'Marketing attribution model',
-		size: 16
+		size: 16,
+		stage: { name: 'Proposal', value: 2 }
 	},
 	{
 		workload: 'c311f2ea-f678-4214-bc8c-16c0c2cf4254' as ID,
@@ -1842,7 +1896,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'lanternfish_seafood'
 		},
 		name: 'Procurement platform rebuild',
-		size: 19
+		size: 19,
+		stage: { name: 'Negotiation', value: 3 }
 	},
 	{
 		workload: '05c032f9-f994-4e89-876e-6862a5a64323' as ID,
@@ -1853,7 +1908,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'crestline_motors'
 		},
 		name: 'Workforce scheduling system',
-		size: 2
+		size: 2,
+		stage: { name: 'Closed Won', value: 4 }
 	},
 	{
 		workload: 'a3bcd48f-dc02-44a7-9bba-86099eb063ed' as ID,
@@ -1864,7 +1920,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'crestline_motors'
 		},
 		name: 'Product catalog migration',
-		size: 5
+		size: 5,
+		stage: { name: 'Closed Lost', value: 99 }
 	},
 	{
 		workload: 'd5a7174b-2ea5-4afc-89dc-92a8fe1e1728' as ID,
@@ -1875,7 +1932,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'pinegrove_timber_co'
 		},
 		name: 'Disaster recovery drill program',
-		size: 8
+		size: 8,
+		stage: { name: 'Discovery', value: 0 }
 	},
 	{
 		workload: 'f2c02e19-4d4f-46c3-8ce5-0d6d4b5d3c0c' as ID,
@@ -1886,7 +1944,8 @@ const WORKLOADS: Array<Workload> = [
 			label: 'aldergate_pharmaceuticals'
 		},
 		name: 'Network infrastructure refresh',
-		size: 11
+		size: 11,
+		stage: { name: 'Qualification', value: 1 }
 	}
 ];
 
@@ -1961,6 +2020,27 @@ function validate_customer_segment(customer: Customer): void {
 	}
 }
 
+/**
+ * Resolves a `Workload`'s `customer` reference (required, unlike Event's optional/XOR refs) and,
+ * if set, its `stage` — both denormalized onto the row, same as `resolve_event_refs`.
+ */
+function resolve_workload_refs(workload: Workload): void {
+	const found_customer = CUSTOMERS.find((c) => c.customer === workload.customer.customer);
+	if (undefined === found_customer) throw new ConstraintError(`${workload.customer.customer}`);
+	workload.customer = {
+		customer: found_customer.customer,
+		name: found_customer.name,
+		label: found_customer.label
+	};
+
+	const { stage } = workload;
+	if (null !== stage) {
+		const found_stage = STAGES.find((s) => s.value === stage.value);
+		if (undefined === found_stage) throw new ConstraintError(`Invalid stage: ${stage.value}`);
+		workload.stage = found_stage;
+	}
+}
+
 export const db = {
 	// node-postgres will throw on things like a constraint violation; callers must catch.
 	async execute<Out>(query: string, input: unknown): Promise<Out> {
@@ -1971,6 +2051,10 @@ export const db = {
 			return _search([...CUSTOMERS, ...WORKLOADS], input as string) as Out;
 		} else if (q.startsWith('select segment')) {
 			return SEGMENTS as Out;
+		} else if (q.startsWith('select stage')) {
+			return STAGES as Out;
+		} else if (q.startsWith('select customer where like')) {
+			return _search(CUSTOMERS, input as string) as Out;
 		} else if (q.startsWith('select customer where')) {
 			const id = input as ID;
 			const results = CUSTOMERS.filter((customer) => id === customer.customer);
@@ -2006,6 +2090,42 @@ export const db = {
 			// DELETE ... RETURNING customer: an empty result means nothing matched.
 			if (index < 0) return null as Out;
 			const [deleted] = CUSTOMERS.splice(index, 1);
+			return deleted as Out;
+		} else if (q.startsWith('select workload where')) {
+			const id = input as ID;
+			const results = WORKLOADS.filter((workload) => id === workload.workload);
+			return (1 === results.length ? results[0] : null) as Out;
+		} else if (q.startsWith('select workload')) {
+			return [...WORKLOADS].sort((a, b) => a.name.localeCompare(b.name)) as Out;
+		} else if (q.startsWith('insert into workload')) {
+			const pending = input as Workload;
+			// workload is a generated column: the caller may never set it directly.
+			if (pending.workload) {
+				throw new ConstraintError('Cannot set id when creating a new workload');
+			}
+			const id = crypto.randomUUID() as ID;
+			// PK uniqueness is always enforced, however the id was sourced.
+			if (WORKLOADS.some((w) => w.workload === id)) {
+				throw new ConstraintError(`Workload ${id} already exists`);
+			}
+			const workload = { ...pending, workload: id };
+			resolve_workload_refs(workload);
+			WORKLOADS.push(workload);
+			return workload as Out;
+		} else if (q.startsWith('update workload')) {
+			const workload = input as Workload;
+			const index = WORKLOADS.findIndex((w) => w.workload === workload.workload);
+			// UPDATE ... RETURNING workload: an empty result means nothing matched.
+			if (index < 0) return null as Out;
+			resolve_workload_refs(workload);
+			WORKLOADS[index] = workload;
+			return WORKLOADS[index] as Out;
+		} else if (q.startsWith('delete workload')) {
+			const id = input as ID;
+			const index = WORKLOADS.findIndex((w) => w.workload === id);
+			// DELETE ... RETURNING workload: an empty result means nothing matched.
+			if (index < 0) return null as Out;
+			const [deleted] = WORKLOADS.splice(index, 1);
 			return deleted as Out;
 		} else if (q.startsWith('select event where')) {
 			const id = input as ID;

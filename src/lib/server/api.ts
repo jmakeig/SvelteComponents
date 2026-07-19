@@ -1,6 +1,6 @@
-import type { Customer, Event, ID, Segment, Workload } from '$lib/entities';
+import type { Customer, Event, ID, Segment, Stage, Workload } from '$lib/entities';
 import { Validation, type Validated } from '$components/FormControl/validation';
-import { validate_customer, validate_event } from '$lib/entities';
+import { validate_customer, validate_event, validate_workload } from '$lib/entities';
 import { db, ConstraintError } from './db';
 
 export const NOT_FOUND = 'not_found';
@@ -126,6 +126,81 @@ export async function delete_customer(id: ID): Promise<Validation<void> | undefi
 	if (!deleted) {
 		return new Validation<void>().add('Customer not found', undefined, NOT_FOUND);
 	}
+}
+
+/**
+ * Retrieves the fixed reference collection of `Stage` options (name + value), for populating
+ * a `<select>` — same role as `list_segments`.
+ */
+export async function list_stages(): Promise<Array<Stage>> {
+	return db.execute<Array<Stage>>('select stage', undefined);
+}
+
+/**
+ * Retrieves an ordered collection of `Workload` instances.
+ *
+ * @returns A collection of `Workload` instances or an empty `Array`
+ */
+export async function list_workloads(): Promise<Array<Workload>> {
+	return db.execute<Array<Workload>>('select workload', undefined);
+}
+
+export async function get_workload(id: ID): Promise<Workload | null> {
+	return db.execute<Workload | null>('select workload where', id);
+}
+
+export async function create_workload(pending: unknown): Promise<Validated<Workload>> {
+	const result = validate_workload(pending, true);
+	if (result.validation) {
+		return result;
+	}
+	try {
+		return { data: await db.execute<Workload>('insert into workload', result.data) };
+	} catch (db_error) {
+		if (db_error instanceof ConstraintError) {
+			return { data: result.data, validation: new Validation<Workload>().add(db_error.message) };
+		}
+		throw db_error;
+	}
+}
+
+export async function update_workload(pending: unknown): Promise<Validated<Workload>> {
+	const result = validate_workload(pending, false);
+	if (result.validation) {
+		return result;
+	}
+	try {
+		const updated = await db.execute<Workload | null>('update workload', result.data);
+		if (!updated) {
+			return {
+				data: result.data,
+				validation: new Validation<Workload>().add('Workload not found', undefined, NOT_FOUND)
+			};
+		}
+		return { data: updated };
+	} catch (db_error) {
+		if (db_error instanceof ConstraintError) {
+			return { data: result.data, validation: new Validation<Workload>().add(db_error.message) };
+		}
+		throw db_error;
+	}
+}
+
+export async function delete_workload(id: ID): Promise<Validation<void> | undefined> {
+	const deleted = await db.execute<Workload | null>('delete workload', id);
+	if (!deleted) {
+		return new Validation<void>().add('Workload not found', undefined, NOT_FOUND);
+	}
+}
+
+/** Customer-only search, for picking the `customer` a `Workload` belongs to — no type ambiguity to encode, unlike `match_customer_workload`. */
+export async function match_customer(input: string) {
+	const matches = await db.execute<Array<Customer>>('select customer where like', input);
+	return matches.map((customer) => ({
+		name: customer.name,
+		label: customer.label,
+		value: customer.customer
+	}));
 }
 
 export async function match_customer_workload(input: string) {

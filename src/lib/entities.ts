@@ -1,5 +1,6 @@
 import { Validation, type Validated } from '$components/FormControl/validation';
 
+/** Optional properties are always represented as explicit `null`, not `undefined` or missing. */
 type Optional<T> = T | null;
 type Pending<T> = Optional<T | string>;
 
@@ -54,9 +55,20 @@ export interface Segment {
 	value: 'select' | 'enterprise' | 'corporate' | 'smb';
 }
 
+/** The stage of the progression through the sales lifecycle. The `value` property allows for ordering. */
+export interface Stage {
+	name: string;
+	/** The order represents the linear progress through the lifecycle. This allows you to sort, but also compare ranges. */
+	value: 0 | 1 | 2 | 3 | 4 | 99;
+}
+
 export type Customer = Entity<'customer'> & { segment: Optional<Segment['value']> };
 
-export type Workload = Entity<'workload'> & { customer: Ref<'customer'>; size: Optional<number> };
+export type Workload = Entity<'workload'> & {
+	customer: Ref<'customer'>;
+	size: Optional<number>;
+	stage: Optional<Stage>;
+};
 
 type BaseEvent = {
 	event: ID;
@@ -243,6 +255,79 @@ export function validate_customer(pending: unknown, is_new: boolean = false): Va
 	}
 	return { data: customer };
 }
+
+/**
+ * Strict structural and value type and existence validation for `Workload`.
+ * This doesn’t check contraints like uniqueness or referential integrity.
+ * Those need to happen closer to the database.
+ *
+ * @param pending Something with a `Workload`-like shape
+ * @param is_new Optional flag to specify whether the intent is to validate a new entry, which will have a `null` `workload` identifier
+ * @returns A strongly typed `Workload` instance or the original `pending` input and the `Validation<Workload>` instance
+ */
+export function validate_workload(pending: unknown, is_new: boolean = false): Validated<Workload> {
+	const validation = new Validation<Workload>();
+	// @ts-expect-error Same "clever or evil" construction pattern as validate_event.
+	const workload: Workload = {};
+	if (undefined === pending || null === pending || 'object' !== typeof pending) {
+		validation.add('Workload must exist');
+	} else {
+		const p = pending as Record<string, unknown>;
+		if ('workload' in p && 'string' === typeof p.workload && '' !== p.workload) {
+			// @ts-expect-error `workload` is readonly on Workload (built from Entity<'workload'>,
+			// unlike Event.event); this is the one place it's legitimately assigned.
+			workload.workload = p.workload as ID;
+		} else if (!is_new) {
+			validation.add('Unknown workload', 'workload');
+		} else {
+			// Careful! Whether the server accepts a client-supplied id is a constraint
+			// enforced at the db layer, not a shape-validation concern.
+			// @ts-expect-error See above.
+			workload.workload = null as unknown as ID;
+		}
+		if ('name' in p && 'string' === typeof p.name && '' !== p.name.trim()) {
+			workload.name = p.name.trim();
+			// label isn’t independently submitted; it’s always derived from name.
+			workload.label = slug(workload.name);
+		} else {
+			validation.add('Name is required', 'name');
+		}
+		if ('customer' in p && 'string' === typeof p.customer && '' !== p.customer) {
+			// @ts-expect-error Resolved (name/label filled in) downstream, in db.ts's resolve_workload_refs.
+			workload.customer = { customer: p.customer as ID };
+		} else {
+			validation.add('Customer is required', 'customer');
+		}
+		if ('size' in p && null !== p.size && '' !== p.size) {
+			const size = Number(p.size);
+			if (!Number.isFinite(size)) {
+				validation.add('Invalid size', 'size');
+			} else {
+				workload.size = size;
+			}
+		} else {
+			workload.size = null;
+		}
+		if ('stage' in p && null !== p.stage && '' !== p.stage) {
+			const value = Number(p.stage);
+			if (!Number.isFinite(value)) {
+				validation.add('Invalid stage', 'stage');
+			} else {
+				// Shape only: is this a number? Whether it's one of the known stage values is a
+				// referential check against STAGES, deferred to the db layer, same as segment.
+				// @ts-expect-error Resolved (name filled in) downstream, in db.ts's resolve_workload_refs.
+				workload.stage = { value: value as Stage['value'] };
+			}
+		} else {
+			workload.stage = null;
+		}
+	}
+	if (validation.has()) {
+		return { data: pending, validation };
+	}
+	return { data: workload };
+}
+
 /**********************************************************************/
 /*
 {

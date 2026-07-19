@@ -1,0 +1,55 @@
+<script lang="ts">
+	import ComboBox from '$components/ComboBox/ComboBox.svelte';
+	import type { Match } from '$components/ComboBox/machine';
+
+	interface Props {
+		name: string;
+		label: string;
+		value?: Match;
+	}
+
+	const { name, label, value }: Props = $props();
+
+	async function search(query: string): Promise<Match[]> {
+		const response = await fetch(`/api/customer?q=${encodeURIComponent(query)}`);
+		if (!response.ok) throw new Error('customer_search_failed');
+		return response.json();
+	}
+</script>
+
+<ComboBox {name} {label} {value} {search}>
+	{#snippet item(match)}
+		<div class="item">
+			{@render icon_customer()}
+			{match.name}
+		</div>
+	{/snippet}
+</ComboBox>
+
+{#snippet icon_customer(width = '1em', height = '1em', title: string = 'Customer')}
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		{width}
+		{height}
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="2"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		class="icon icon-tabler icons-tabler-outline icon-tabler-building-store"
+		><title>{title}</title><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
+			d="M3 21l18 0"
+		/><path
+			d="M3 7v1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1h-18l2 -4h14l2 4"
+		/><path d="M5 21l0 -10.15" /><path d="M19 21l0 -10.15" /><path
+			d="M9 21v-4a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v4"
+		/></svg
+	>
+{/snippet}
+
+<style>
+	.item .icon {
+		vertical-align: middle;
+	}
+</style>
