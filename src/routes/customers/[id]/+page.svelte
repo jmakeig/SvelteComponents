@@ -5,4 +5,4 @@
 	let { data, form }: PageProps = $props();
 </script>
 
-<CustomerForm action="edit" {form} data={data.customer} />
+<CustomerForm action="edit" {form} data={data.customer} segments={data.segments} />

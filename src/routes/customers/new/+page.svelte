@@ -6,4 +6,4 @@
 </script>
 
 <h1>Customer</h1>
-<CustomerForm action="new" {form} {data} />
+<CustomerForm action="new" {form} {data} segments={data.segments} />

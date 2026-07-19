@@ -1,4 +1,4 @@
-import type { Customer, Event, ID, Workload } from '$lib/entities';
+import type { Customer, Event, ID, Segment, Workload } from '$lib/entities';
 import ufuzzy from '@leeoniya/ufuzzy';
 
 const EVENTS: Array<Event> = [
@@ -1027,6 +1027,13 @@ const EVENTS: Array<Event> = [
 	}
 ];
 
+const SEGMENTS: Array<Segment> = [
+	{ name: 'Select', value: 'select' },
+	{ name: 'Enterprise', value: 'enterprise' },
+	{ name: 'Corporate', value: 'corporate' },
+	{ name: 'SMB', value: 'smb' }
+];
+
 const CUSTOMERS: Array<Customer> = [
 	{
 		customer: '6b47e099-e412-4de5-a2c2-af570a5131a0' as ID,
@@ -1946,6 +1953,14 @@ function resolve_event_refs(event: Event): void {
 	}
 }
 
+/** Checks a `Customer`'s `segment` against the known `SEGMENTS` — a referential check, same category as `resolve_event_refs`'s FK checks, just against a fixed table instead of a mutable one. */
+function validate_customer_segment(customer: Customer): void {
+	if (null === customer.segment) return;
+	if (!SEGMENTS.some((segment) => segment.value === customer.segment)) {
+		throw new ConstraintError(`Invalid segment: ${customer.segment}`);
+	}
+}
+
 export const db = {
 	// node-postgres will throw on things like a constraint violation; callers must catch.
 	async execute<Out>(query: string, input: unknown): Promise<Out> {
@@ -1954,6 +1969,8 @@ export const db = {
 		const q = query.toLowerCase();
 		if (q.startsWith('select customer_workload where like')) {
 			return _search([...CUSTOMERS, ...WORKLOADS], input as string) as Out;
+		} else if (q.startsWith('select segment')) {
+			return SEGMENTS as Out;
 		} else if (q.startsWith('select customer where')) {
 			const id = input as ID;
 			const results = CUSTOMERS.filter((customer) => id === customer.customer);
@@ -1972,6 +1989,7 @@ export const db = {
 				throw new ConstraintError(`Customer ${id} already exists`);
 			}
 			const customer = { ...pending, customer: id };
+			validate_customer_segment(customer);
 			CUSTOMERS.push(customer);
 			return customer as Out;
 		} else if (q.startsWith('update customer')) {
@@ -1979,6 +1997,7 @@ export const db = {
 			const index = CUSTOMERS.findIndex((c) => c.customer === customer.customer);
 			// UPDATE ... RETURNING customer: an empty result means nothing matched.
 			if (index < 0) return null as Out;
+			validate_customer_segment(customer);
 			CUSTOMERS[index] = customer;
 			return CUSTOMERS[index] as Out;
 		} else if (q.startsWith('delete customer')) {

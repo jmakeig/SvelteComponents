@@ -1,4 +1,4 @@
-import type { Customer, Event, ID, Workload } from '$lib/entities';
+import type { Customer, Event, ID, Segment, Workload } from '$lib/entities';
 import { Validation, type Validated } from '$components/FormControl/validation';
 import { validate_customer, validate_event } from '$lib/entities';
 import { db, ConstraintError } from './db';
@@ -60,6 +60,15 @@ export async function delete_event(id: ID): Promise<Validation<void> | undefined
 	if (!deleted) {
 		return new Validation<void>().add('Event not found', undefined, NOT_FOUND);
 	}
+}
+
+/**
+ * Retrieves the fixed reference collection of `Segment` options (name + value), for populating
+ * a `<select>` — not a mutable table, but routed through `db.execute` for consistency with
+ * every other read.
+ */
+export async function list_segments(): Promise<Array<Segment>> {
+	return db.execute<Array<Segment>>('select segment', undefined);
 }
 
 /**

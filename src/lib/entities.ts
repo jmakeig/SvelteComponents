@@ -49,9 +49,12 @@ type Entity<Name extends string> = {
  */
 type Ref<Name extends string> = Entity<Name>;
 
-export type Segment = 'select' | 'enterprise' | 'corporate' | 'smb';
+export interface Segment {
+	name: string;
+	value: 'select' | 'enterprise' | 'corporate' | 'smb';
+}
 
-export type Customer = Entity<'customer'> & { segment: Optional<Segment> };
+export type Customer = Entity<'customer'> & { segment: Optional<Segment['value']> };
 
 export type Workload = Entity<'workload'> & { customer: Ref<'customer'>; size: Optional<number> };
 
@@ -227,12 +230,10 @@ export function validate_customer(pending: unknown, is_new: boolean = false): Va
 			validation.add('Name is required', 'name');
 		}
 		if ('segment' in p && 'string' === typeof p.segment && '' !== p.segment) {
-			const segments: Segment[] = ['select', 'enterprise', 'corporate', 'smb'];
-			if ((segments as string[]).includes(p.segment)) {
-				customer.segment = p.segment as Segment;
-			} else {
-				validation.add('Invalid segment', 'segment');
-			}
+			// Shape only: is this a non-empty string? Whether it's one of the known segment
+			// values is a referential check against SEGMENTS, deferred to the db layer —
+			// same as customer/workload existence is for Event, not re-checked here.
+			customer.segment = p.segment as Segment['value'];
 		} else {
 			customer.segment = null;
 		}

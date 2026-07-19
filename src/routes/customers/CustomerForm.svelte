@@ -10,13 +10,12 @@
 		action?: 'new' | 'edit' | 'view';
 		data: Customer;
 		form?: Validated<Customer> | null; // ActionData
+		segments: Segment[];
 	}
 
-	const { action = 'edit', data, form }: Props = $props();
+	const { action = 'edit', data, form, segments }: Props = $props();
 	/** Either a validated `Customer` or the raw (possibly invalid) submission being redisplayed — read fields off it with a local cast, not a modeled shape. */
 	const customer = $derived((form?.data ?? data) as Record<string, unknown> | undefined);
-
-	const segments: Segment[] = ['select', 'enterprise', 'corporate', 'smb'];
 </script>
 
 <form
@@ -44,7 +43,7 @@
 			<select {...provided}>
 				<option value="">—</option>
 				{#each segments as segment}
-					<option value={segment}>{segment}</option>
+					<option value={segment.value}>{segment.name}</option>
 				{/each}
 			</select>
 		{/snippet}
