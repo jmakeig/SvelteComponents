@@ -1,12 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
-import type { PageServerLoad, Actions } from './$types';
+import type { Actions } from './$types';
 import * as api from '$lib/server/api';
-
-export const load = (async ({ params }) => {
-	const workload = await api.get_workload_by_label(params.label);
-	if (!workload) error(404, 'Workload not found');
-	return { workload };
-}) satisfies PageServerLoad;
 
 export const actions = {
 	edit: async ({ request }) => {

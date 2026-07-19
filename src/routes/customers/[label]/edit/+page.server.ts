@@ -1,12 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
-import type { PageServerLoad, Actions } from './$types';
+import type { Actions } from './$types';
 import * as api from '$lib/server/api';
-
-export const load = (async ({ params }) => {
-	const customer = await api.get_customer_by_label(params.label);
-	if (!customer) error(404, 'Customer not found');
-	return { customer };
-}) satisfies PageServerLoad;
 
 export const actions = {
 	edit: async ({ request }) => {

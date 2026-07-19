@@ -1,8 +1,9 @@
 <script lang="ts">
-	import EventForm from '../EventForm.svelte';
 	import type { PageProps } from './$types';
 
-	let { data, form }: PageProps = $props();
+	let { data }: PageProps = $props();
 </script>
 
-<EventForm action="edit" {form} data={data.event} />
+<h1>{data.event.outcome}</h1>
+<p><a href="/events/{data.event.event}/edit">Edit</a></p>
+<pre>{JSON.stringify(data.event, null, 2)}</pre>

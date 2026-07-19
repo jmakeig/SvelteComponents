@@ -1,15 +1,9 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import type { PageServerLoad, Actions } from './$types';
+import type { Actions } from './$types';
 import type { ID, Event } from '$lib/entities';
 import * as api from '$lib/server/api';
 import { Validation } from '$components/FormControl/validation';
-import { unmarshall } from '../EventForm.svelte';
-
-export const load = (async ({ params }) => {
-	const event = await api.get_event(params.id as ID);
-	if (!event) error(404, 'Event not found');
-	return { event };
-}) satisfies PageServerLoad;
+import { unmarshall } from '../../EventForm.svelte';
 
 export const actions = {
 	edit: async ({ request }) => {

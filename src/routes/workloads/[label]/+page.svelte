@@ -1,8 +1,9 @@
 <script lang="ts">
-	import WorkloadForm from '../WorkloadForm.svelte';
 	import type { PageProps } from './$types';
 
-	let { data, form }: PageProps = $props();
+	let { data }: PageProps = $props();
 </script>
 
-<WorkloadForm action="edit" {form} data={data.workload} stages={data.stages} />
+<h1>{data.workload.name}</h1>
+<p><a href="/workloads/{data.workload.label}/edit">Edit</a></p>
+<pre>{JSON.stringify(data.workload, null, 2)}</pre>

@@ -1,8 +1,9 @@
 <script lang="ts">
-	import CustomerForm from '../CustomerForm.svelte';
 	import type { PageProps } from './$types';
 
-	let { data, form }: PageProps = $props();
+	let { data }: PageProps = $props();
 </script>
 
-<CustomerForm action="edit" {form} data={data.customer} segments={data.segments} />
+<h1>{data.customer.name}</h1>
+<p><a href="/customers/{data.customer.label}/edit">Edit</a></p>
+<pre>{JSON.stringify(data.customer, null, 2)}</pre>
