@@ -2044,7 +2044,7 @@ function resolve_workload_refs(workload: Workload): void {
 export const db = {
 	// node-postgres will throw on things like a constraint violation; callers must catch.
 	async execute<Out>(query: string, input: unknown): Promise<Out> {
-		await delay(200, console.warn('No error fuzzing') ?? 0);
+		await delay(200, 0);
 		// Ordered most- to least-specific: each prefix is a substring of the next one down.
 		const q = query.toLowerCase();
 		if (q.startsWith('select customer_workload where like')) {
@@ -2055,9 +2055,9 @@ export const db = {
 			return STAGES as Out;
 		} else if (q.startsWith('select customer where like')) {
 			return _search(CUSTOMERS, input as string) as Out;
-		} else if (q.startsWith('select customer where')) {
-			const id = input as ID;
-			const results = CUSTOMERS.filter((customer) => id === customer.customer);
+		} else if (q.startsWith('select customer where label')) {
+			const label = input as string;
+			const results = CUSTOMERS.filter((customer) => label === customer.label);
 			return (1 === results.length ? results[0] : null) as Out;
 		} else if (q.startsWith('select customer')) {
 			return [...CUSTOMERS].sort((a, b) => a.name.localeCompare(b.name)) as Out;
@@ -2072,6 +2072,10 @@ export const db = {
 			if (CUSTOMERS.some((c) => c.customer === id)) {
 				throw new ConstraintError(`Customer ${id} already exists`);
 			}
+			// label doubles as the URL identifier, so it's unique too.
+			if (CUSTOMERS.some((c) => c.label === pending.label)) {
+				throw new ConstraintError(`Customer label '${pending.label}' already exists`);
+			}
 			const customer = { ...pending, customer: id };
 			validate_customer_segment(customer);
 			CUSTOMERS.push(customer);
@@ -2081,6 +2085,9 @@ export const db = {
 			const index = CUSTOMERS.findIndex((c) => c.customer === customer.customer);
 			// UPDATE ... RETURNING customer: an empty result means nothing matched.
 			if (index < 0) return null as Out;
+			if (CUSTOMERS.some((c, i) => i !== index && c.label === customer.label)) {
+				throw new ConstraintError(`Customer label '${customer.label}' already exists`);
+			}
 			validate_customer_segment(customer);
 			CUSTOMERS[index] = customer;
 			return CUSTOMERS[index] as Out;
@@ -2091,9 +2098,9 @@ export const db = {
 			if (index < 0) return null as Out;
 			const [deleted] = CUSTOMERS.splice(index, 1);
 			return deleted as Out;
-		} else if (q.startsWith('select workload where')) {
-			const id = input as ID;
-			const results = WORKLOADS.filter((workload) => id === workload.workload);
+		} else if (q.startsWith('select workload where label')) {
+			const label = input as string;
+			const results = WORKLOADS.filter((workload) => label === workload.label);
 			return (1 === results.length ? results[0] : null) as Out;
 		} else if (q.startsWith('select workload')) {
 			return [...WORKLOADS].sort((a, b) => a.name.localeCompare(b.name)) as Out;
@@ -2108,6 +2115,10 @@ export const db = {
 			if (WORKLOADS.some((w) => w.workload === id)) {
 				throw new ConstraintError(`Workload ${id} already exists`);
 			}
+			// label doubles as the URL identifier, so it's unique too.
+			if (WORKLOADS.some((w) => w.label === pending.label)) {
+				throw new ConstraintError(`Workload label '${pending.label}' already exists`);
+			}
 			const workload = { ...pending, workload: id };
 			resolve_workload_refs(workload);
 			WORKLOADS.push(workload);
@@ -2117,6 +2128,9 @@ export const db = {
 			const index = WORKLOADS.findIndex((w) => w.workload === workload.workload);
 			// UPDATE ... RETURNING workload: an empty result means nothing matched.
 			if (index < 0) return null as Out;
+			if (WORKLOADS.some((w, i) => i !== index && w.label === workload.label)) {
+				throw new ConstraintError(`Workload label '${workload.label}' already exists`);
+			}
 			resolve_workload_refs(workload);
 			WORKLOADS[index] = workload;
 			return WORKLOADS[index] as Out;

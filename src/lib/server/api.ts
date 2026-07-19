@@ -80,8 +80,8 @@ export async function list_customers(): Promise<Array<Customer>> {
 	return db.execute<Array<Customer>>('select customer', undefined);
 }
 
-export async function get_customer(id: ID): Promise<Customer | null> {
-	return db.execute<Customer | null>('select customer where', id);
+export async function get_customer_by_label(label: string): Promise<Customer | null> {
+	return db.execute<Customer | null>('select customer where label', label);
 }
 
 export async function create_customer(pending: unknown): Promise<Validated<Customer>> {
@@ -145,8 +145,8 @@ export async function list_workloads(): Promise<Array<Workload>> {
 	return db.execute<Array<Workload>>('select workload', undefined);
 }
 
-export async function get_workload(id: ID): Promise<Workload | null> {
-	return db.execute<Workload | null>('select workload where', id);
+export async function get_workload_by_label(label: string): Promise<Workload | null> {
+	return db.execute<Workload | null>('select workload where label', label);
 }
 
 export async function create_workload(pending: unknown): Promise<Validated<Workload>> {

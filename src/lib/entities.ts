@@ -236,8 +236,14 @@ export function validate_customer(pending: unknown, is_new: boolean = false): Va
 		}
 		if ('name' in p && 'string' === typeof p.name && '' !== p.name.trim()) {
 			customer.name = p.name.trim();
-			// label isn’t independently submitted; it’s always derived from name.
-			customer.label = slug(customer.name);
+			// label isn’t independently submitted; it’s always derived from name, and is the
+			// URL identifier — a name that slugifies to nothing (e.g. all punctuation) is invalid.
+			const label = slug(customer.name);
+			if ('' === label) {
+				validation.add('Name must contain at least one letter or number', 'name');
+			} else {
+				customer.label = label;
+			}
 		} else {
 			validation.add('Name is required', 'name');
 		}
@@ -287,8 +293,14 @@ export function validate_workload(pending: unknown, is_new: boolean = false): Va
 		}
 		if ('name' in p && 'string' === typeof p.name && '' !== p.name.trim()) {
 			workload.name = p.name.trim();
-			// label isn’t independently submitted; it’s always derived from name.
-			workload.label = slug(workload.name);
+			// label isn’t independently submitted; it’s always derived from name, and is the
+			// URL identifier — a name that slugifies to nothing (e.g. all punctuation) is invalid.
+			const label = slug(workload.name);
+			if ('' === label) {
+				validation.add('Name must contain at least one letter or number', 'name');
+			} else {
+				workload.label = label;
+			}
 		} else {
 			validation.add('Name is required', 'name');
 		}

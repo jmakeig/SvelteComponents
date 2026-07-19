@@ -9,7 +9,7 @@
 <ul>
 	{#each data.customers as customer}
 		<li>
-			<a href="/customers/{customer.customer}">{customer.name} ({customer.label})</a>
+			<a href="/customers/{customer.label}">{customer.name} ({customer.label})</a>
 			<pre>{JSON.stringify(customer, null, 2)}</pre>
 		</li>
 	{:else}<li>No customers. <a href="/customers/new">Create one.</a></li>

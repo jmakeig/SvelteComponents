@@ -9,7 +9,7 @@
 <ul>
 	{#each data.workloads as workload}
 		<li>
-			<a href="/workloads/{workload.workload}">{workload.name} ({workload.customer.name})</a>
+			<a href="/workloads/{workload.label}">{workload.name} ({workload.customer.name})</a>
 			<pre>{JSON.stringify(workload, null, 2)}</pre>
 		</li>
 	{:else}<li>No workloads. <a href="/workloads/new">Create one.</a></li>
