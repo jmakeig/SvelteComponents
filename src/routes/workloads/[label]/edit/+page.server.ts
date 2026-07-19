@@ -16,7 +16,7 @@ export const actions = {
 	},
 	delete: async ({ params }) => {
 		// Delete stays keyed on the true id — the label is only how this page is addressed.
-		const workload = await api.get_workload_by_label(params.label);
+		const workload = await api.get_workload({ label: params.label });
 		if (!workload) error(404, 'Workload not found');
 		const validation = await api.delete_workload(workload.workload);
 		if (validation?.coded(api.NOT_FOUND)) {

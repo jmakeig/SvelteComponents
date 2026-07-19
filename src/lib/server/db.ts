@@ -1,4 +1,4 @@
-import type { Customer, Event, ID, Segment, Stage, Workload } from '$lib/entities';
+import { create_ref, type Customer, type Event, type ID, type Segment, type Stage, type Workload } from '$lib/entities';
 import ufuzzy from '@leeoniya/ufuzzy';
 
 const EVENTS: Array<Event> = [
@@ -2002,13 +2002,13 @@ function resolve_event_refs(event: Event): void {
 	if ('customer' in event && 'object' === typeof event.customer) {
 		const found = CUSTOMERS.find((c) => c.customer === event.customer.customer);
 		if (undefined === found) throw new ConstraintError(`${event.customer.customer}`);
-		event.customer = { customer: found.customer, name: found.name, label: found.label };
+		event.customer = create_ref(found, 'customer');
 	}
 
 	if ('workload' in event && 'object' === typeof event.workload) {
 		const found = WORKLOADS.find((w) => w.workload === event.workload.workload);
 		if (undefined === found) throw new ConstraintError(`${event.workload.workload}`);
-		event.workload = { workload: found.workload, name: found.name, label: found.label };
+		event.workload = create_ref(found, 'workload');
 	}
 }
 
@@ -2027,11 +2027,7 @@ function validate_customer_segment(customer: Customer): void {
 function resolve_workload_refs(workload: Workload): void {
 	const found_customer = CUSTOMERS.find((c) => c.customer === workload.customer.customer);
 	if (undefined === found_customer) throw new ConstraintError(`${workload.customer.customer}`);
-	workload.customer = {
-		customer: found_customer.customer,
-		name: found_customer.name,
-		label: found_customer.label
-	};
+	workload.customer = create_ref(found_customer, 'customer');
 
 	const { stage } = workload;
 	if (null !== stage) {
@@ -2058,6 +2054,10 @@ export const db = {
 		} else if (q.startsWith('select customer where label')) {
 			const label = input as string;
 			const results = CUSTOMERS.filter((customer) => label === customer.label);
+			return (1 === results.length ? results[0] : null) as Out;
+		} else if (q.startsWith('select customer where')) {
+			const id = input as ID;
+			const results = CUSTOMERS.filter((customer) => id === customer.customer);
 			return (1 === results.length ? results[0] : null) as Out;
 		} else if (q.startsWith('select customer')) {
 			return [...CUSTOMERS].sort((a, b) => a.name.localeCompare(b.name)) as Out;
@@ -2101,6 +2101,10 @@ export const db = {
 		} else if (q.startsWith('select workload where label')) {
 			const label = input as string;
 			const results = WORKLOADS.filter((workload) => label === workload.label);
+			return (1 === results.length ? results[0] : null) as Out;
+		} else if (q.startsWith('select workload where')) {
+			const id = input as ID;
+			const results = WORKLOADS.filter((workload) => id === workload.workload);
 			return (1 === results.length ? results[0] : null) as Out;
 		} else if (q.startsWith('select workload')) {
 			return [...WORKLOADS].sort((a, b) => a.name.localeCompare(b.name)) as Out;

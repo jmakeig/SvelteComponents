@@ -50,6 +50,16 @@ type Entity<Name extends string> = {
  */
 type Ref<Name extends string> = Entity<Name>;
 
+/**
+ * Builds a `Ref<Name>` from a full entity, keeping only the `Ref` shape (`label`, `name`, and the
+ * id field named `key`). Structural typing doesn't strip excess properties on a plain assignment
+ * (e.g. `event.customer = found_customer` also carries along `Customer.segment`), so denormalizing
+ * a reference onto another entity should go through this rather than a direct assignment.
+ */
+export function create_ref<Name extends string>(entity: Entity<Name>, key: Name): Ref<Name> {
+	return { [key]: entity[key], name: entity.name, label: entity.label } as Ref<Name>;
+}
+
 export interface Segment {
 	name: string;
 	value: 'select' | 'enterprise' | 'corporate' | 'smb';

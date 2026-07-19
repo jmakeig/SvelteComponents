@@ -16,7 +16,7 @@ export const actions = {
 	},
 	delete: async ({ params }) => {
 		// Delete stays keyed on the true id — the label is only how this page is addressed.
-		const customer = await api.get_customer_by_label(params.label);
+		const customer = await api.get_customer({ label: params.label });
 		if (!customer) error(404, 'Customer not found');
 		const validation = await api.delete_customer(customer.customer);
 		if (validation?.coded(api.NOT_FOUND)) {

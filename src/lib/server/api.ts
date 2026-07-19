@@ -5,6 +5,9 @@ import { db, ConstraintError } from './db';
 
 export const NOT_FOUND = 'not_found';
 
+/** Look up an entity by its true id or by its (mutable) label — exactly one, not both. */
+type Lookup = { id: ID; label?: never } | { label: string; id?: never };
+
 /**
  * Retrieves an ordered collection of `Event` instances.
  *
@@ -80,8 +83,11 @@ export async function list_customers(): Promise<Array<Customer>> {
 	return db.execute<Array<Customer>>('select customer', undefined);
 }
 
-export async function get_customer_by_label(label: string): Promise<Customer | null> {
-	return db.execute<Customer | null>('select customer where label', label);
+export async function get_customer(lookup: Lookup): Promise<Customer | null> {
+	if ('id' in lookup) {
+		return db.execute<Customer | null>('select customer where', lookup.id);
+	}
+	return db.execute<Customer | null>('select customer where label', lookup.label);
 }
 
 export async function create_customer(pending: unknown): Promise<Validated<Customer>> {
@@ -145,8 +151,11 @@ export async function list_workloads(): Promise<Array<Workload>> {
 	return db.execute<Array<Workload>>('select workload', undefined);
 }
 
-export async function get_workload_by_label(label: string): Promise<Workload | null> {
-	return db.execute<Workload | null>('select workload where label', label);
+export async function get_workload(lookup: Lookup): Promise<Workload | null> {
+	if ('id' in lookup) {
+		return db.execute<Workload | null>('select workload where', lookup.id);
+	}
+	return db.execute<Workload | null>('select workload where label', lookup.label);
 }
 
 export async function create_workload(pending: unknown): Promise<Validated<Workload>> {
