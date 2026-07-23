@@ -6,4 +6,4 @@
 </script>
 
 <h1>Event</h1>
-<EventForm action="new" {form} {data} />
+<EventForm action="new" {form} {data} stages={data.stages} />

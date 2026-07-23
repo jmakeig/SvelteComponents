@@ -51,25 +51,30 @@
 			<CustomerCombo {name} {label} value={initial_customer_match(data)} />
 		{/snippet}
 	</FormControl>
-	<FormControl name="size" value={workload?.size ?? ''} validation={form?.validation}>
-		{#snippet input(provided)}
-			<input type="number" min="0" {...provided} />
-		{/snippet}
-	</FormControl>
-	<FormControl
-		name="stage"
-		value={(workload?.stage as Stage | null)?.value ?? ''}
-		validation={form?.validation}
-	>
-		{#snippet input(provided)}
-			<select {...provided}>
-				<option value="">—</option>
-				{#each stages as stage}
-					<option value={stage.value}>{stage.name}</option>
-				{/each}
-			</select>
-		{/snippet}
-	</FormControl>
+	{#if 'new' === action}
+		<!-- Size/stage only accept an initial value here — once a Workload exists, they're
+		     derived from its Event history (see `validate_workload`/`api.create_workload`) and
+		     can only change by adding a WorkloadEvent, not by editing the Workload directly. -->
+		<FormControl name="size" value={workload?.size ?? ''} validation={form?.validation}>
+			{#snippet input(provided)}
+				<input type="number" min="0" step="10000" {...provided} />
+			{/snippet}
+		</FormControl>
+		<FormControl
+			name="stage"
+			value={(workload?.stage as Stage | null)?.value ?? ''}
+			validation={form?.validation}
+		>
+			{#snippet input(provided)}
+				<select {...provided}>
+					<option value="">—</option>
+					{#each stages as stage}
+						<option value={stage.value}>{stage.name}</option>
+					{/each}
+				</select>
+			{/snippet}
+		</FormControl>
+	{/if}
 	<div class="control actions">
 		<button class="default">
 			{#if 'new' === action}

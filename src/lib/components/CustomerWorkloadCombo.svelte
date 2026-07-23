@@ -11,9 +11,11 @@
 		name: string;
 		label: string;
 		value?: CustomerWorkloadMatch;
+		/** Forwarded to the underlying `ComboBox` — fires when a match is committed, so callers can react to the live selection (e.g. a customer vs. workload choice) rather than only the initial `value`. */
+		onselect?: (event: { value: CustomerWorkloadMatch }) => void;
 	}
 
-	const { name, label, value }: Props = $props();
+	const { name, label, value, onselect }: Props = $props();
 
 	async function search(query: string): Promise<CustomerWorkloadMatch[]> {
 		const response = await fetch(`/api/customer-workload?q=${encodeURIComponent(query)}`);
@@ -22,7 +24,7 @@
 	}
 </script>
 
-<ComboBox {name} {label} {value} {search}>
+<ComboBox {name} {label} {value} {search} {onselect}>
 	{#snippet item(match, mode)}
 		<div class="item">
 			{#if match.ref && 'compact' !== mode}

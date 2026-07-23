@@ -5,4 +5,4 @@
 	let { data, form }: PageProps = $props();
 </script>
 
-<EventForm action="edit" {form} data={data.event} />
+<EventForm action="edit" {form} data={data.event} stages={data.stages} />

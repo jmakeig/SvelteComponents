@@ -1,4 +1,13 @@
-import { create_ref, type Customer, type Event, type ID, type Segment, type Stage, type Workload } from '$lib/entities';
+import {
+	create_ref,
+	type Customer,
+	type Event,
+	type ID,
+	type Segment,
+	type Stage,
+	type Workload,
+	type WorkloadHistoryEntry
+} from '$lib/entities';
 import ufuzzy from '@leeoniya/ufuzzy';
 
 const EVENTS: Array<Event> = [
@@ -1949,6 +1958,74 @@ const WORKLOADS: Array<Workload> = [
 	}
 ];
 
+/**
+ * Seed-data backfill: every `Workload` above was authored with a hardcoded `size`/`stage` from
+ * before those became derived from `Event` history. This synthesizes the history that would have
+ * produced those values — one "Initial creation" entry per workload, dated well before the
+ * hand-authored check-in events above — so `/workloads/[label]` has real history to render
+ * instead of a mysteriously-populated current value with nothing behind it. A handful of
+ * workloads additionally get a richer multi-entry progression, to exercise reverse-chronological
+ * ordering and partial (size-only/stage-only) updates in the UI.
+ *
+ * Runs once at module load. `recompute_workload_snapshot` (defined further down, but hoisted)
+ * re-derives every workload's current `size`/`stage` from the synthesized history afterwards, so
+ * this can't drift from what's actually in `EVENTS`.
+ */
+(function backfill_workload_history() {
+	const RICH_HISTORY: Record<string, Array<{ happened_at: string; size?: number; stage?: number }>> = {
+		// Customer portal redesign — currently size: 4, stage: Discovery (0).
+		'ad060232-8b52-4ada-b6b4-eb64f0a1c0e9': [
+			{ happened_at: '2026-01-15', size: 2, stage: 0 },
+			{ happened_at: '2026-04-10', size: 3 },
+			{ happened_at: '2026-06-20', size: 4 }
+		],
+		// Q3 supply chain audit — currently size: 7, stage: Qualification (1).
+		'86114daf-5d32-4509-a69d-fb9bba43be92': [
+			{ happened_at: '2026-02-01', size: 3, stage: 0 },
+			{ happened_at: '2026-05-05', stage: 1 },
+			{ happened_at: '2026-06-18', size: 7 }
+		],
+		// Inventory tracking rollout — currently size: 10, stage: Proposal (2).
+		'32e160bb-1822-4a0a-832a-6050c49f326d': [
+			{ happened_at: '2026-01-20', size: 5, stage: 0 },
+			{ happened_at: '2026-03-18', size: 8, stage: 1 },
+			{ happened_at: '2026-06-15', size: 10, stage: 2 }
+		]
+	};
+
+	for (const workload of WORKLOADS) {
+		const rich = RICH_HISTORY[workload.workload];
+		if (rich) {
+			for (const entry of rich) {
+				EVENTS.push({
+					event: crypto.randomUUID() as ID,
+					workload: create_ref(workload, 'workload'),
+					outcome: 'Checked in — status reviewed and next steps agreed.',
+					happened_at: new Date(entry.happened_at),
+					...('size' in entry ? { size: entry.size } : {}),
+					...('stage' in entry
+						? { stage: STAGES.find((s) => s.value === entry.stage) ?? null }
+						: {})
+				} as Event);
+			}
+			continue;
+		}
+		if (null === workload.size && null === workload.stage) continue;
+		EVENTS.push({
+			event: crypto.randomUUID() as ID,
+			workload: create_ref(workload, 'workload'),
+			outcome: 'Initial creation',
+			happened_at: new Date('2026-01-01'),
+			size: workload.size,
+			stage: workload.stage
+		} as Event);
+	}
+
+	for (const workload of WORKLOADS) {
+		recompute_workload_snapshot(workload.workload);
+	}
+})();
+
 function _search(
 	list: Array<Customer | Workload>,
 	input: string,
@@ -2009,7 +2086,57 @@ function resolve_event_refs(event: Event): void {
 		const found = WORKLOADS.find((w) => w.workload === event.workload.workload);
 		if (undefined === found) throw new ConstraintError(`${event.workload.workload}`);
 		event.workload = create_ref(found, 'workload');
+
+		// Same referential check as `resolve_workload_refs`'s own `stage` resolution, just
+		// reached via a WorkloadEvent's optional update instead of the Workload row itself.
+		if (undefined !== event.stage && null !== event.stage) {
+			const found_stage = STAGES.find((s) => s.value === event.stage!.value);
+			if (undefined === found_stage) throw new ConstraintError(`Invalid stage: ${event.stage.value}`);
+			event.stage = found_stage;
+		}
 	}
+}
+
+/**
+ * Recomputes a `Workload`'s current `size`/`stage` from its history and writes them back onto
+ * the `WORKLOADS` row in place — the same denormalize-on-write role as `resolve_workload_refs`,
+ * just derived from `EVENTS` instead of resolved by id. `size` and `stage` are tracked
+ * independently: the most recent `WorkloadEvent` that touched `size` wins for `size`, regardless
+ * of whether that same event also touched `stage`.
+ *
+ * Called after any write that can change a workload event's contribution to history — inserting,
+ * updating (which can also move an event onto/off of a workload), or deleting one.
+ */
+function recompute_workload_snapshot(workload_id: ID): void {
+	const workload = WORKLOADS.find((w) => w.workload === workload_id);
+	if (undefined === workload) return; // The workload itself was deleted; nothing to update.
+
+	const history = EVENTS.filter(
+		(e): e is Event & { workload: NonNullable<Event['workload']> } =>
+			'workload' in e && undefined !== e.workload && e.workload.workload === workload_id
+	);
+
+	// `history` is in `EVENTS` insertion order, so `>=` (not `>`) makes a same-`happened_at`
+	// tie resolve to whichever entry was recorded most recently, not whichever happens to sort
+	// first — `happened_at` is a date picked by the user, not a timestamp, so same-day ties are
+	// routine, and the more-recently-written entry is the one that should win.
+	const latest_size = history
+		.filter((e) => 'size' in e)
+		.reduce<(typeof history)[number] | undefined>(
+			(latest, e) =>
+				!latest || e.happened_at.getTime() >= latest.happened_at.getTime() ? e : latest,
+			undefined
+		);
+	workload.size = latest_size ? (latest_size.size ?? null) : null;
+
+	const latest_stage = history
+		.filter((e) => 'stage' in e)
+		.reduce<(typeof history)[number] | undefined>(
+			(latest, e) =>
+				!latest || e.happened_at.getTime() >= latest.happened_at.getTime() ? e : latest,
+			undefined
+		);
+	workload.stage = latest_stage ? (latest_stage.stage ?? null) : null;
 }
 
 /** Checks a `Customer`'s `segment` against the known `SEGMENTS` — a referential check, same category as `resolve_event_refs`'s FK checks, just against a fixed table instead of a mutable one. */
@@ -2106,6 +2233,17 @@ export const db = {
 			const id = input as ID;
 			const results = WORKLOADS.filter((workload) => id === workload.workload);
 			return (1 === results.length ? results[0] : null) as Out;
+		} else if (q.startsWith('select workload_history where')) {
+			const id = input as ID;
+			return EVENTS.filter((e) => 'workload' in e && e.workload?.workload === id)
+				.filter((e) => 'size' in e || 'stage' in e)
+				.map((e) => {
+					const entry: WorkloadHistoryEntry = { event: e.event, happened_at: e.happened_at };
+					if ('size' in e) entry.size = e.size;
+					if ('stage' in e) entry.stage = e.stage;
+					return entry;
+				})
+				.sort((a, b) => b.happened_at.getTime() - a.happened_at.getTime()) as Out;
 		} else if (q.startsWith('select workload')) {
 			return [...WORKLOADS].sort((a, b) => a.name.localeCompare(b.name)) as Out;
 		} else if (q.startsWith('insert into workload')) {
@@ -2128,13 +2266,16 @@ export const db = {
 			WORKLOADS.push(workload);
 			return workload as Out;
 		} else if (q.startsWith('update workload')) {
-			const workload = input as Workload;
-			const index = WORKLOADS.findIndex((w) => w.workload === workload.workload);
+			const patch = input as Workload;
+			const index = WORKLOADS.findIndex((w) => w.workload === patch.workload);
 			// UPDATE ... RETURNING workload: an empty result means nothing matched.
 			if (index < 0) return null as Out;
-			if (WORKLOADS.some((w, i) => i !== index && w.label === workload.label)) {
-				throw new ConstraintError(`Workload label '${workload.label}' already exists`);
+			if (WORKLOADS.some((w, i) => i !== index && w.label === patch.label)) {
+				throw new ConstraintError(`Workload label '${patch.label}' already exists`);
 			}
+			// `size`/`stage` are derived from history, not part of what this update can touch —
+			// carry the existing row's values forward regardless of what the caller sent.
+			const workload = { ...patch, size: WORKLOADS[index].size, stage: WORKLOADS[index].stage };
 			resolve_workload_refs(workload);
 			WORKLOADS[index] = workload;
 			return WORKLOADS[index] as Out;
@@ -2165,15 +2306,31 @@ export const db = {
 			const event = { ...pending, event: id };
 			resolve_event_refs(event);
 			EVENTS.push(event);
+			if ('workload' in event && event.workload) {
+				recompute_workload_snapshot(event.workload.workload);
+			}
 			return event as Out;
 		} else if (q.startsWith('update event')) {
 			const event = input as Event;
 			const index = EVENTS.findIndex((e) => e.event === event.event);
 			// UPDATE ... RETURNING event: an empty result means nothing matched.
 			if (index < 0) return null as Out;
+			const previous = EVENTS[index];
 
 			resolve_event_refs(event);
 			EVENTS[index] = event;
+			// An edit can re-point an event onto/off of a workload (or just shift its
+			// happened_at), so both the old and new workload — if any — need recomputing.
+			if ('workload' in previous && previous.workload) {
+				recompute_workload_snapshot(previous.workload.workload);
+			}
+			if (
+				'workload' in event &&
+				event.workload &&
+				event.workload.workload !== previous.workload?.workload
+			) {
+				recompute_workload_snapshot(event.workload.workload);
+			}
 			return EVENTS[index] as Out;
 		} else if (q.startsWith('delete event')) {
 			const id = input as ID;
@@ -2181,6 +2338,9 @@ export const db = {
 			// DELETE ... RETURNING event: an empty result means nothing matched.
 			if (index < 0) return null as Out;
 			const [deleted] = EVENTS.splice(index, 1);
+			if ('workload' in deleted && deleted.workload) {
+				recompute_workload_snapshot(deleted.workload.workload);
+			}
 			return deleted as Out;
 		}
 		throw new Error(`Not implemented: ${query}`);

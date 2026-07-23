@@ -17,11 +17,19 @@
 			const [type, entity] = customer_workload.split('_');
 			pair = { [type]: entity };
 		}
+		// `size`/`stage` only exist in the DOM when a workload is selected (see `EventForm`'s
+		// `selected_kind`-gated fields) — `form.has` (not `form.get`, which always returns at
+		// least `null`) is what preserves "the key is absent" for a customer event, matching
+		// `validate_event`'s own absent-vs-blank distinction.
+		const size_stage: Record<string, unknown> = {};
+		if (form.has('size')) size_stage.size = form.get('size');
+		if (form.has('stage')) size_stage.stage = form.get('stage');
 		return {
 			event: form.get('event'),
 			outcome: form.get('outcome'),
 			happened_at: form.get('happened_at'),
-			...pair
+			...pair,
+			...size_stage
 		};
 	}
 </script>
@@ -33,20 +41,32 @@
 	import { create_submit_enhance } from '$components/FormControl/FormControl.svelte';
 	import type { Validated } from '$components/FormControl/validation';
 
-	import { type Event, validate_event } from '$lib/entities';
+	import { type Event, type Stage, validate_event } from '$lib/entities';
 	import type { Match } from '$components/ComboBox/machine';
 
 	interface Props {
 		action?: 'new' | 'edit' | 'view';
 		data: Event;
 		form?: Validated<Event> | null; // ActionData
+		stages: Stage[];
 	}
 
-	const { action = 'edit', data, form }: Props = $props();
+	const { action = 'edit', data, form, stages }: Props = $props();
 	/** Either a validated `Event` or the raw (possibly invalid) submission being redisplayed — read fields off it with a local cast, not a modeled shape. */
 	const event = $derived((form?.data ?? data) as Record<string, unknown> | undefined);
 
 	$inspect(event);
+
+	/**
+	 * Tracks the combo's *live* selection kind, so the size/stage fields can appear/disappear as
+	 * the user picks a customer vs. a workload — not just reflect what was initially loaded.
+	 * Only ever seeded from `data` (see `initial_match`'s own caveat below); a failed submission
+	 * that changed the selection still loses it on redisplay, same pre-existing gap.
+	 */
+	// svelte-ignore state_referenced_locally
+	let selected_kind: 'customer' | 'workload' | undefined = $state(
+		initial_match(data)?.value.split('_')[0] as 'customer' | 'workload' | undefined
+	);
 
 	/** TODO: Extract later */
 	type Loosey<T> = T | string | null | undefined;
@@ -108,7 +128,13 @@
 		validation={form?.validation}
 	>
 		{#snippet input({ name, label = '' })}
-			<CustomerWorkloadCombo {name} {label} value={initial_match(data)} />
+			<CustomerWorkloadCombo
+				{name}
+				{label}
+				value={initial_match(data)}
+				onselect={(evt) =>
+					(selected_kind = evt.value.value.startsWith('workload_') ? 'workload' : 'customer')}
+			/>
 		{/snippet}
 	</FormControl>
 	<FormControl name="outcome" value={event?.outcome} validation={form?.validation}>
@@ -125,6 +151,30 @@
 			<input type="date" {...provided} />
 		{/snippet}
 	</FormControl>
+	{#if 'workload' === selected_kind}
+		<!-- Blank means "this event doesn't update size/stage," not "clear it" — see
+		     `validate_event`. Prefilled from this Event's own recorded value when editing one
+		     that already has it, never from the Workload's current computed value. -->
+		<FormControl name="size" value={event?.size ?? ''} validation={form?.validation}>
+			{#snippet input(provided)}
+				<input type="number" min="0" step="10000" {...provided} />
+			{/snippet}
+		</FormControl>
+		<FormControl
+			name="stage"
+			value={(event?.stage as Stage | null)?.value ?? ''}
+			validation={form?.validation}
+		>
+			{#snippet input(provided)}
+				<select {...provided}>
+					<option value="">—</option>
+					{#each stages as stage}
+						<option value={stage.value}>{stage.name}</option>
+					{/each}
+				</select>
+			{/snippet}
+		</FormControl>
+	{/if}
 	<div class="control actions">
 		<button class="default">
 			{#if 'new' === action}

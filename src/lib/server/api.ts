@@ -1,6 +1,11 @@
-import type { Customer, Event, ID, Segment, Stage, Workload } from '$lib/entities';
+import type { Customer, Event, ID, Segment, Stage, Workload, WorkloadHistoryEntry } from '$lib/entities';
 import { Validation, type Validated } from '$components/FormControl/validation';
-import { validate_customer, validate_event, validate_workload } from '$lib/entities';
+import {
+	validate_customer,
+	validate_event,
+	validate_workload,
+	validate_workload_snapshot
+} from '$lib/entities';
 import { db, ConstraintError } from './db';
 
 export const NOT_FOUND = 'not_found';
@@ -160,14 +165,34 @@ export async function get_workload(lookup: Lookup): Promise<Workload | null> {
 
 export async function create_workload(pending: unknown): Promise<Validated<Workload>> {
 	const result = validate_workload(pending, true);
-	if (result.validation) {
-		return result;
+	// Size/stage aren't part of the Workload row (see `validate_workload`) — they're validated
+	// separately here so an initial value can seed the implicit "Initial creation" event below,
+	// keeping "size/stage only change via events" true even at creation time.
+	const snapshot = validate_workload_snapshot(pending);
+	if (result.validation || snapshot.validation) {
+		const validation = new Validation<Workload>();
+		if (result.validation) validation.merge(result.validation);
+		if (snapshot.validation) {
+			validation.merge(snapshot.validation as unknown as Validation<Workload>);
+		}
+		return { data: pending, validation };
 	}
 	try {
-		return { data: await db.execute<Workload>('insert into workload', result.data) };
+		const workload = await db.execute<Workload>('insert into workload', result.data);
+		if (null !== snapshot.data.size || null !== snapshot.data.stage) {
+			await db.execute('insert into event', {
+				event: null,
+				workload: { workload: workload.workload },
+				outcome: 'Initial creation',
+				happened_at: new Date(),
+				size: snapshot.data.size,
+				stage: snapshot.data.stage
+			});
+		}
+		return { data: workload };
 	} catch (db_error) {
 		if (db_error instanceof ConstraintError) {
-			return { data: result.data, validation: new Validation<Workload>().add(db_error.message) };
+			return { data: pending, validation: new Validation<Workload>().add(db_error.message) };
 		}
 		throw db_error;
 	}
@@ -200,6 +225,16 @@ export async function delete_workload(id: ID): Promise<Validation<void> | undefi
 	if (!deleted) {
 		return new Validation<void>().add('Workload not found', undefined, NOT_FOUND);
 	}
+}
+
+/**
+ * Retrieves a `Workload`'s append-only size/stage update history, reverse chronological
+ * (most-recent first) — the same events that `Workload.size`/`.stage` are themselves derived
+ * from. Read-only: entries can only be added by creating (or edited/removed by editing/deleting)
+ * a `WorkloadEvent`, never written directly.
+ */
+export async function list_workload_history(id: ID): Promise<Array<WorkloadHistoryEntry>> {
+	return db.execute<Array<WorkloadHistoryEntry>>('select workload_history where', id);
 }
 
 /** Customer-only search, for picking the `customer` a `Workload` belongs to — no type ambiguity to encode, unlike `match_customer_workload`. */

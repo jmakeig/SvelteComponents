@@ -88,12 +88,36 @@ type BaseEvent = {
 type CustomerEvent = BaseEvent & {
 	customer: Ref<'customer'>;
 	workload?: never;
+	size?: never;
+	stage?: never;
 };
+/**
+ * A `WorkloadEvent` can optionally carry an update to its `Workload`'s `size` and/or `stage` —
+ * independently of one another. The key being *absent* (not merely `null`) is what means "this
+ * event doesn't touch that field"; that absence is what `db.ts`'s history/current-value
+ * derivation filters on (`'size' in event`). `null` is a real, submitted value (e.g. clearing
+ * a previously-set stage), not a stand-in for "not provided."
+ */
 type WorkloadEvent = BaseEvent & {
 	workload: Ref<'workload'>;
 	customer?: never;
+	size?: Optional<number>;
+	stage?: Optional<Stage>;
 };
 export type Event = CustomerEvent | WorkloadEvent;
+
+/**
+ * A single append-only entry in a `Workload`'s history — the projection of a `WorkloadEvent`
+ * that actually touched `size` and/or `stage`. Exists only on `/workloads/[label]`'s load data,
+ * never on `Workload` itself: `Workload.size`/`.stage` are the derived *current* values, this is
+ * the full timeline they're derived from.
+ */
+export type WorkloadHistoryEntry = {
+	event: ID;
+	happened_at: Date;
+	size?: Optional<number>;
+	stage?: Optional<Stage>;
+};
 
 /**
  * TODO: Oof. This will be different on the client and the server because of locales.
@@ -140,6 +164,30 @@ export function slug(name: string): string {
 }
 
 /**
+ * Parses a `Workload.size`-shaped field. Blank/missing means "not provided" (`null`), distinct
+ * from a value that fails to parse as a finite number (an error). Shared between `validate_event`
+ * (where a value is only ever attached to the `Event` when actually submitted) and
+ * `validate_workload_snapshot` (where `null` is a real, storable value on the snapshot).
+ */
+function parse_size(raw: unknown): { value: Optional<number> } | { error: string } {
+	if (undefined === raw || null === raw || '' === raw) return { value: null };
+	const size = Number(raw);
+	if (!Number.isFinite(size)) return { error: 'Invalid size' };
+	return { value: size };
+}
+
+/** Parses a `Workload.stage`-shaped field. See `parse_size` for the blank-vs-invalid distinction. */
+function parse_stage(raw: unknown): { value: Optional<Stage> } | { error: string } {
+	if (undefined === raw || null === raw || '' === raw) return { value: null };
+	const value = Number(raw);
+	if (!Number.isFinite(value)) return { error: 'Invalid stage' };
+	// Shape only: is this a number? Whether it's one of the known stage values is a referential
+	// check against STAGES, deferred to the db layer — same as workload.stage below.
+	// @ts-expect-error Resolved (name filled in) downstream, in db.ts.
+	return { value: { value } };
+}
+
+/**
  * Strict structural and value type and existence validation.
  * This doesn’t check contraints like uniqueness or referential integrity.
  * Those need to happen closer to the database.
@@ -181,6 +229,26 @@ export function validate_event(pending: unknown, is_new: boolean = false): Valid
 			}
 		} else {
 			validation.add('Customer or workload is required', 'customer_workload');
+		}
+		if ('workload' in event) {
+			// Blank means "this event doesn't update size/stage," not "clear it" — an
+			// always-present `<input>` submits `''` when untouched, so blank has to mean
+			// "skip," and the key is only attached to `event` when a real value was given.
+			if ('size' in p && '' !== p.size && null !== p.size) {
+				const result = parse_size(p.size);
+				if ('error' in result) validation.add(result.error, 'size');
+				else event.size = result.value;
+			}
+			if ('stage' in p && '' !== p.stage && null !== p.stage) {
+				const result = parse_stage(p.stage);
+				if ('error' in result) validation.add(result.error, 'stage');
+				else event.stage = result.value;
+			}
+		} else if ('size' in p || 'stage' in p) {
+			// A CustomerEvent's `size`/`stage` are `never` — the field shouldn't even be in the
+			// DOM for a customer selection, so its presence at all (any value, including blank)
+			// means the submission doesn't match what was rendered.
+			validation.add('Size and stage only apply to workload events', 'customer_workload');
 		}
 		if ('happened_at' in p) {
 			if (p.happened_at instanceof Date) event.happened_at = p.happened_at;
@@ -320,34 +388,44 @@ export function validate_workload(pending: unknown, is_new: boolean = false): Va
 		} else {
 			validation.add('Customer is required', 'customer');
 		}
-		if ('size' in p && null !== p.size && '' !== p.size) {
-			const size = Number(p.size);
-			if (!Number.isFinite(size)) {
-				validation.add('Invalid size', 'size');
-			} else {
-				workload.size = size;
-			}
-		} else {
-			workload.size = null;
-		}
-		if ('stage' in p && null !== p.stage && '' !== p.stage) {
-			const value = Number(p.stage);
-			if (!Number.isFinite(value)) {
-				validation.add('Invalid stage', 'stage');
-			} else {
-				// Shape only: is this a number? Whether it's one of the known stage values is a
-				// referential check against STAGES, deferred to the db layer, same as segment.
-				// @ts-expect-error Resolved (name filled in) downstream, in db.ts's resolve_workload_refs.
-				workload.stage = { value: value as Stage['value'] };
-			}
-		} else {
-			workload.stage = null;
-		}
+		// `size`/`stage` are derived from history (see `validate_workload_snapshot` and
+		// `db.ts`'s `recompute_workload_snapshot`), not submitted here — a fresh `Workload` row
+		// always starts at `null` until an event establishes a value.
+		workload.size = null;
+		workload.stage = null;
 	}
 	if (validation.has()) {
 		return { data: pending, validation };
 	}
 	return { data: workload };
+}
+
+/**
+ * Validates the optional initial `size`/`stage` on a new-`Workload` submission. These don't land
+ * on the `Workload` row itself (see `validate_workload`) — they seed the implicit "Initial
+ * creation" `Event` that `api.create_workload` inserts, so the value is traceable in history from
+ * the start rather than being a special-cased exception to "size/stage only change via events."
+ *
+ * @param pending Something with a `Workload`-like shape (the same new-workload submission passed to `validate_workload`)
+ */
+export function validate_workload_snapshot(
+	pending: unknown
+): Validated<{ size: Optional<number>; stage: Optional<Stage> }> {
+	const validation = new Validation<{ size: Optional<number>; stage: Optional<Stage> }>();
+	const p = (pending && 'object' === typeof pending ? pending : {}) as Record<string, unknown>;
+	const size_result = parse_size(p.size);
+	if ('error' in size_result) validation.add(size_result.error, 'size');
+	const stage_result = parse_stage(p.stage);
+	if ('error' in stage_result) validation.add(stage_result.error, 'stage');
+	if (validation.has()) {
+		return { data: pending, validation };
+	}
+	return {
+		data: {
+			size: (size_result as { value: Optional<number> }).value,
+			stage: (stage_result as { value: Optional<Stage> }).value
+		}
+	};
 }
 
 /**********************************************************************/
