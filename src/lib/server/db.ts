@@ -1972,7 +1972,10 @@ const WORKLOADS: Array<Workload> = [
  * this can't drift from what's actually in `EVENTS`.
  */
 (function backfill_workload_history() {
-	const RICH_HISTORY: Record<string, Array<{ happened_at: string; size?: number; stage?: number }>> = {
+	const RICH_HISTORY: Record<
+		string,
+		Array<{ happened_at: string; size?: number; stage?: number }>
+	> = {
 		// Customer portal redesign — currently size: 4, stage: Discovery (0).
 		'ad060232-8b52-4ada-b6b4-eb64f0a1c0e9': [
 			{ happened_at: '2026-01-15', size: 2, stage: 0 },
@@ -2091,7 +2094,8 @@ function resolve_event_refs(event: Event): void {
 		// reached via a WorkloadEvent's optional update instead of the Workload row itself.
 		if (undefined !== event.stage && null !== event.stage) {
 			const found_stage = STAGES.find((s) => s.value === event.stage!.value);
-			if (undefined === found_stage) throw new ConstraintError(`Invalid stage: ${event.stage.value}`);
+			if (undefined === found_stage)
+				throw new ConstraintError(`Invalid stage: ${event.stage.value}`);
 			event.stage = found_stage;
 		}
 	}

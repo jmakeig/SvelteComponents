@@ -3,6 +3,7 @@
 
 	let { data, children }: LayoutProps = $props();
 </script>
+
 <nav>
 	<a href="/customers">Customers</a> <a href="/workloads">Workloads</a> <a href="/events">Events</a>
 </nav>

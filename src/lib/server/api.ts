@@ -1,4 +1,12 @@
-import type { Customer, Event, ID, Segment, Stage, Workload, WorkloadHistoryEntry } from '$lib/entities';
+import type {
+	Customer,
+	Event,
+	ID,
+	Segment,
+	Stage,
+	Workload,
+	WorkloadHistoryEntry
+} from '$lib/entities';
 import { Validation, type Validated } from '$components/FormControl/validation';
 import {
 	validate_customer,
