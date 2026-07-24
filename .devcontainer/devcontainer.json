@@ -9,10 +9,7 @@
 	// "features": {},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// This can be used to network with other containers or with the host.
-	"forwardPorts": [
-		5173,
-		5432
-	],
+	"forwardPorts": [5173, 5432],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "sudo apt-get update && sudo apt-get install -y postgresql-client && npm install -g npm@latest && npm install",
 	// Configure tool-specific properties.
@@ -26,7 +23,9 @@
 				"editorconfig.editorconfig",
 				"anthropic.claude-code",
 				"statelyai.stately-vscode",
-				"MylesMurphy.prettify-ts"
+				"MylesMurphy.prettify-ts",
+				"mtxr.sqltools",
+				"mtxr.sqltools-driver-pg"
 			],
 			"settings": {
 				"remote.autoForwardPorts": false,
@@ -37,7 +36,23 @@
 					"editor.defaultFormatter": "svelte.svelte-vscode"
 				},
 				"editor.minimap.enabled": false,
-				"scm.diffDecorations": "gutter"
+				"scm.diffDecorations": "gutter",
+				"sqltools.connections": [
+					{
+						"previewLimit": 50,
+						"server": "db",
+						"port": 5432,
+						"driver": "PostgreSQL",
+						"name": "pipeline",
+						"database": "pipeline",
+						"username": "pipelineadmin",
+						"askForPassword": true,
+						"pgOptions": {
+							"ssl": false
+						}
+					}
+				],
+				"sqltools.queryParams.enableReplace": true
 			}
 		}
 	}
