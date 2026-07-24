@@ -12,6 +12,7 @@ if [[ -f "$env_file" ]]; then
 fi
 
 export PGPASSWORD="${POSTGRES_PASSWORD:-}"
+export PGOPTIONS="-c search_path=pipeline"
 
 start_ms=$(date +%s%3N)
 

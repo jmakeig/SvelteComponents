@@ -5,7 +5,6 @@
 -- schemas (e.g. a future `auth` schema).
 DROP SCHEMA IF EXISTS pipeline CASCADE;
 CREATE SCHEMA pipeline;
-SET search_path TO pipeline;
 
 -- Reference data: the fixed set of customer segments. Small, closed enumeration,
 -- so `segment` is the code itself (matches `Customer.segment` in entities.ts)
