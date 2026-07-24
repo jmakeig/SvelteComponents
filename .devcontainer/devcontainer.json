@@ -1,13 +1,18 @@
 {
 	"name": "ComboBox",
-	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspaces/SvelteComponents",
 	"features": {
 		"ghcr.io/devcontainers/features/node:2.1.0": {
 			"version": "lts"
 		}
 	},
-	"forwardPorts": [5173],
-	"postCreateCommand": "npm install -g npm@latest && npm install -g @anthropic-ai/claude-code && npm install",
+	"forwardPorts": [5173, 5432],
+	"containerEnv": {
+		"DATABASE_URL": "postgresql://postgres:postgres@db:5432/combobox"
+	},
+	"postCreateCommand": "sudo apt-get update && sudo apt-get install -y postgresql-client && npm install -g npm@latest && npm install -g @anthropic-ai/claude-code && npm install",
 	"customizations": {
 		"vscode": {
 			"extensions": [
