@@ -48,7 +48,8 @@
 						"username": "pipelineadmin",
 						"askForPassword": true,
 						"pgOptions": {
-							"ssl": false
+							"ssl": false,
+							"options": "-c search_path=pipeline,public"
 						}
 					}
 				],

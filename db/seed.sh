@@ -13,6 +13,8 @@ fi
 
 export PGPASSWORD="${POSTGRES_PASSWORD:-}"
 
+start_ms=$(date +%s%3N)
+
 psql \
 	--host="${POSTGRES_HOST:-db}" \
 	--port="${POSTGRES_PORT:-5432}" \
@@ -20,3 +22,7 @@ psql \
 	--dbname="${POSTGRES_DB}" \
 	--file="$script_dir/schema.sql" \
 	--file="$script_dir/seed.sql"
+
+end_ms=$(date +%s%3N)
+elapsed_ms=$((end_ms - start_ms))
+echo "db:seed completed in ${elapsed_ms}ms"

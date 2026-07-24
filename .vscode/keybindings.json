@@ -1,0 +1,12 @@
+[
+	{
+		"key": "cmd+enter",
+		"command": "sqltools.executeAllQueries",
+		"when": "editorLangId == sql && editorTextFocus"
+	},
+	{
+		"key": "cmd+shift+enter",
+		"command": "sqltools.executeQuery",
+		"when": "editorLangId == sql && editorTextFocus"
+	}
+]
