@@ -9,7 +9,8 @@
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check",
 		"format": "prettier --write .",
-		"kill": "pkill -f 'vite dev'"
+		"kill": "pkill -f 'vite dev'",
+		"db:seed": "bash db/seed.sh"
 	},
 	"devDependencies": {
 		"@leeoniya/ufuzzy": "1.0.19",
