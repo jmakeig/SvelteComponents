@@ -8,10 +8,13 @@ CREATE SCHEMA pipeline;
 
 -- Reference data: the fixed set of customer segments. Small, closed enumeration,
 -- so `segment` is the code itself (matches `Customer.segment` in entities.ts)
--- rather than a synthetic key nothing would join through.
+-- rather than a synthetic key nothing would join through. `ordinal` exists purely
+-- to reproduce a fixed display order (e.g. for a `<select>`) — there's no natural
+-- column (alphabetical, etc.) that already encodes it.
 CREATE TABLE segments (
 	segment TEXT PRIMARY KEY,
-	name TEXT NOT NULL
+	name TEXT NOT NULL,
+	ordinal SMALLINT NOT NULL
 );
 
 CREATE TABLE customers (

@@ -86,7 +86,7 @@
 	 * feeding a failed submission's `customer`/`workload` through here too, which is a
 	 * `Ref` in name only at that point: a client-side/shape validation failure carries a raw
 	 * string id (`unmarshall`'s output, unparsed), while a server-side db-constraint failure
-	 * (see `resolve_event_refs` in db.ts) carries a `{customer: id}`/`{workload: id}` object
+	 * (see `insert_event`/`update_event` in api.ts) carries a `{customer: id}`/`{workload: id}` object
 	 * with no `name`/`label` yet — neither matches `Ref`'s (now `Entity`'s) required shape.
 	 * Whichever shape, this needs to degrade gracefully rather than assume a resolved `Ref`.
 	 */

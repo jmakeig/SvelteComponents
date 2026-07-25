@@ -1,8 +1,8 @@
-INSERT INTO segments (segment, name) VALUES
-	('select', 'Select'),
-	('enterprise', 'Enterprise'),
-	('corporate', 'Corporate'),
-	('smb', 'SMB')
+INSERT INTO segments (segment, name, ordinal) VALUES
+	('select', 'Select', 0),
+	('enterprise', 'Enterprise', 1),
+	('corporate', 'Corporate', 2),
+	('smb', 'SMB', 3)
 ON CONFLICT (segment) DO NOTHING;
 
 INSERT INTO stages (stage, name) VALUES

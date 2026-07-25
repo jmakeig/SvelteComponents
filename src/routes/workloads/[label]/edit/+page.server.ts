@@ -1,4 +1,4 @@
-import { error, redirect } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import * as api from '$lib/server/api';
 
@@ -21,6 +21,12 @@ export const actions = {
 		const validation = await api.delete_workload(workload.workload);
 		if (validation?.coded(api.NOT_FOUND)) {
 			error(404, validation.first(undefined, api.NOT_FOUND)?.message ?? 'Workload not found');
+		}
+		// A constraint violation (e.g. this workload still has events) — previously
+		// unreachable when deletes always succeeded in the in-memory mock. `data: workload`
+		// matches `edit`'s `Validated<Workload>` shape so `ActionData` stays a single type.
+		if (validation) {
+			return fail(422, { data: workload, validation });
 		}
 		redirect(303, '/workloads');
 	}

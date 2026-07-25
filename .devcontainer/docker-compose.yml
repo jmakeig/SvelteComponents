@@ -21,6 +21,16 @@ services:
     networks:
       - app-network
 
+    # SvelteKit's server-side db connection (src/lib/server/connection.ts) reads these via
+    # $env/static/private. db:seed/db:load get the same values by sourcing .devcontainer/.env
+    # directly in their own shell scripts, which doesn't help a long-running `vite dev` process.
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
     # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 

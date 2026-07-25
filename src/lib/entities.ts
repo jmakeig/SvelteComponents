@@ -94,7 +94,7 @@ type CustomerEvent = BaseEvent & {
 /**
  * A `WorkloadEvent` can optionally carry an update to its `Workload`'s `size` and/or `stage` —
  * independently of one another. The key being *absent* (not merely `null`) is what means "this
- * event doesn't touch that field"; that absence is what `db.ts`'s history/current-value
+ * event doesn't touch that field"; that absence is what `api.ts`'s history/current-value
  * derivation filters on (`'size' in event`). `null` is a real, submitted value (e.g. clearing
  * a previously-set stage), not a stand-in for "not provided."
  */
@@ -183,7 +183,7 @@ function parse_stage(raw: unknown): { value: Optional<Stage> } | { error: string
 	if (!Number.isFinite(value)) return { error: 'Invalid stage' };
 	// Shape only: is this a number? Whether it's one of the known stage values is a referential
 	// check against STAGES, deferred to the db layer — same as workload.stage below.
-	// @ts-expect-error Resolved (name filled in) downstream, in db.ts.
+	// @ts-expect-error Resolved (name filled in) downstream, in api.ts.
 	return { value: { value } };
 }
 
@@ -215,12 +215,12 @@ export function validate_event(pending: unknown, is_new: boolean = false): Valid
 		}
 		if ('customer' in p || 'workload' in p) {
 			if ('customer' in p && 'string' === typeof p.customer && !('workload' in p)) {
-				// @ts-expect-error Resolved (name/label filled in) downstream, in db.ts's resolve_event_refs.
+				// @ts-expect-error Resolved (name/label filled in) downstream, by api.ts's read query.
 				event.customer = {
 					customer: p.customer as ID
 				};
 			} else if ('workload' in p && 'string' === typeof p.workload && !('customer' in p)) {
-				// @ts-expect-error Resolved (name/label filled in) downstream, in db.ts's resolve_event_refs.
+				// @ts-expect-error Resolved (name/label filled in) downstream, by api.ts's read query.
 				event.workload = {
 					workload: p.workload as ID
 				};
@@ -383,14 +383,14 @@ export function validate_workload(pending: unknown, is_new: boolean = false): Va
 			validation.add('Name is required', 'name');
 		}
 		if ('customer' in p && 'string' === typeof p.customer && '' !== p.customer) {
-			// @ts-expect-error Resolved (name/label filled in) downstream, in db.ts's resolve_workload_refs.
+			// @ts-expect-error Resolved (name/label filled in) downstream, by api.ts's read query.
 			workload.customer = { customer: p.customer as ID };
 		} else {
 			validation.add('Customer is required', 'customer');
 		}
-		// `size`/`stage` are derived from history (see `validate_workload_snapshot` and
-		// `db.ts`'s `recompute_workload_snapshot`), not submitted here — a fresh `Workload` row
-		// always starts at `null` until an event establishes a value.
+		// `size`/`stage` are derived from history (see `validate_workload_snapshot`; the
+		// `workloads` SQL view re-derives current values live on every read), not submitted
+		// here — a fresh `Workload` row always starts at `null` until an event establishes a value.
 		workload.size = null;
 		workload.stage = null;
 	}
