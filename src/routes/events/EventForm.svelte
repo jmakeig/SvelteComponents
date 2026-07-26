@@ -55,8 +55,6 @@
 	/** Either a validated `Event` or the raw (possibly invalid) submission being redisplayed — read fields off it with a local cast, not a modeled shape. */
 	const event = $derived((form?.data ?? data) as Record<string, unknown> | undefined);
 
-	$inspect(event);
-
 	/**
 	 * Tracks the combo's *live* selection kind, so the size/stage fields can appear/disappear as
 	 * the user picks a customer vs. a workload — not just reflect what was initially loaded.

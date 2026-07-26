@@ -64,7 +64,7 @@ export function create_connection() {
 					const res = await runner(client);
 					await client.query('COMMIT');
 					return res;
-				} catch (/** @type {any} */ err) {
+				} catch (err) {
 					await client.query('ROLLBACK');
 					throw wrap_error(err);
 				}
