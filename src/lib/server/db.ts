@@ -8,6 +8,17 @@ import {
 } from '$env/static/private';
 
 import { parse_date_local } from '$lib/entities';
+
+/** Common shape of `create_connection()`'s own `query` and a `pg.PoolClient` handed to a
+ *  `transaction` runner — lets a helper like `insert_event` run either standalone (against the
+ *  pool) or as one statement inside a caller's transaction, without caring which. */
+export interface Queryable {
+	query<T extends pg.QueryResultRow = Record<string, unknown>>(
+		statement: string,
+		params?: Array<unknown>
+	): Promise<pg.QueryResult<T>>;
+}
+
 export function create_connection() {
 	const connection = new pg.Pool({
 		host: POSTGRES_HOST || 'db',

@@ -14,7 +14,7 @@ import {
 	validate_workload,
 	validate_workload_snapshot
 } from '$lib/entities';
-import { create_connection, ConstraintError, revive_happened_at } from './db';
+import { create_connection, ConstraintError, revive_happened_at, type Queryable } from './db';
 import ufuzzy from '@leeoniya/ufuzzy';
 
 const db = create_connection();
@@ -74,13 +74,15 @@ const WORKLOAD_SHAPE_SQL = `jsonb_build_object(
 	                 ELSE jsonb_build_object('name', st.name, 'value', w.stage) END
 	 )`;
 
-/** Shared by `create_event` and `create_workload`'s implicit "Initial creation" event. */
-async function insert_event(pending: Event): Promise<Event> {
+/** Shared by `create_event` and `create_workload`'s implicit "Initial creation" event. `executor`
+ *  defaults to the pool (`db`) but accepts a transaction's `client` instead, so the latter's
+ *  insert lands in the same transaction as the workload row it's seeding — see `create_workload`. */
+async function insert_event(pending: Event, executor: Queryable = db): Promise<Event> {
 	// event is a generated column: the caller may never set it directly.
 	if (pending.event) {
 		throw new ConstraintError('Cannot set id when creating a new event');
 	}
-	const result = await db.query<{ event: Event }>(
+	const result = await executor.query<{ event: Event }>(
 		`WITH inserted AS (
 		   INSERT INTO events (outcome, happened_at, customer, workload, workload_size, workload_stage)
 		   VALUES ($1, $2, $3, $4, $5, $6)
@@ -101,9 +103,11 @@ async function insert_event(pending: Event): Promise<Event> {
 			'workload' in pending && 'stage' in pending ? (pending.stage?.value ?? null) : null
 		]
 	);
-	// 23503 (bad customer/workload/stage ref) / 23514 (XOR / null-implies-null checks)
-	// -> ConstraintError via connection.ts. No recompute call needed — the `workloads`
-	// view derives current size/stage live on every read.
+	// 23503 (bad customer/workload/stage ref) / 23514 (XOR / null-implies-null checks) ->
+	// ConstraintError, either here (default `executor` is `db`, which wraps) or one level up
+	// in `db.transaction` (a transaction's raw `client` doesn't, so its caller's `catch` sees
+	// it there instead). No recompute call needed — the `workloads` view derives current
+	// size/stage live on every read.
 	return revive_happened_at(result.rows[0].event);
 }
 
@@ -416,41 +420,47 @@ export async function create_workload(pending: unknown): Promise<Validated<Workl
 		if (new_workload.workload) {
 			throw new ConstraintError('Cannot set id when creating a new workload');
 		}
-		const inserted = await db.query<{ workload: Workload }>(
-			`WITH inserted AS (
-			   INSERT INTO workloads_base (label, name, customer) VALUES ($1, $2, $3)
-			   RETURNING workload, label, name, customer
-			 )
-			 SELECT jsonb_build_object(
-			   'workload', i.workload, 'label', i.label, 'name', i.name,
-			   'customer', jsonb_build_object('customer', c.customer, 'name', c.name, 'label', c.label),
-			   'size', NULL::int, 'stage', NULL::jsonb
-			 ) AS workload
-			 FROM inserted i JOIN customers c ON c.customer = i.customer`,
-			[new_workload.label, new_workload.name, new_workload.customer.customer]
-		);
-		// 23503 (bad customer ref) / 23505 (dup label) -> ConstraintError via connection.ts.
-		const workload = inserted.rows[0].workload;
-		if (null !== snapshot.data.size || null !== snapshot.data.stage) {
-			// Same "clever or evil" construction pattern as `validate_event`: `event` is a
-			// generated column, so `null` stands in for "not yet assigned" ahead of the insert.
-			// @ts-expect-error See entities.ts's validate_event for the same trick.
-			const seed: Event = {};
-			seed.event = null as unknown as ID;
-			// @ts-expect-error Pending ref (just an id, no name/label yet) — same escape hatch
-			// `Ref`'s own doc comment calls out for `validate_event`'s `Ref` construction.
-			seed.workload = { workload: workload.workload };
-			seed.outcome = 'Initial creation';
-			seed.happened_at = new Date();
-			seed.size = snapshot.data.size;
-			seed.stage = snapshot.data.stage;
-			await insert_event(seed);
-			// `workload` is a fresh row from the insert above, so it doesn't reflect the seed
-			// event just inserted — merge what was just written directly rather than
-			// round-tripping another query for it.
-			workload.size = snapshot.data.size;
-			workload.stage = snapshot.data.stage;
-		}
+		// Both statements run against the same transaction `client` (not `db.query`, which
+		// would each grab their own pool connection): if the seed event's insert fails, the
+		// workload insert must roll back too rather than leave an orphaned row behind.
+		const workload = await db.transaction(async (client) => {
+			const inserted = await client.query<{ workload: Workload }>(
+				`WITH inserted AS (
+				   INSERT INTO workloads_base (label, name, customer) VALUES ($1, $2, $3)
+				   RETURNING workload, label, name, customer
+				 )
+				 SELECT jsonb_build_object(
+				   'workload', i.workload, 'label', i.label, 'name', i.name,
+				   'customer', jsonb_build_object('customer', c.customer, 'name', c.name, 'label', c.label),
+				   'size', NULL::int, 'stage', NULL::jsonb
+				 ) AS workload
+				 FROM inserted i JOIN customers c ON c.customer = i.customer`,
+				[new_workload.label, new_workload.name, new_workload.customer.customer]
+			);
+			// 23503 (bad customer ref) / 23505 (dup label) -> ConstraintError via `db.transaction`.
+			const workload = inserted.rows[0].workload;
+			if (null !== snapshot.data.size || null !== snapshot.data.stage) {
+				// Same "clever or evil" construction pattern as `validate_event`: `event` is a
+				// generated column, so `null` stands in for "not yet assigned" ahead of the insert.
+				// @ts-expect-error See entities.ts's validate_event for the same trick.
+				const seed: Event = {};
+				seed.event = null as unknown as ID;
+				// @ts-expect-error Pending ref (just an id, no name/label yet) — same escape hatch
+				// `Ref`'s own doc comment calls out for `validate_event`'s `Ref` construction.
+				seed.workload = { workload: workload.workload };
+				seed.outcome = 'Initial creation';
+				seed.happened_at = new Date();
+				seed.size = snapshot.data.size;
+				seed.stage = snapshot.data.stage;
+				await insert_event(seed, client);
+				// `workload` is a fresh row from the insert above, so it doesn't reflect the seed
+				// event just inserted — merge what was just written directly rather than
+				// round-tripping another query for it.
+				workload.size = snapshot.data.size;
+				workload.stage = snapshot.data.stage;
+			}
+			return workload;
+		});
 		return { data: workload };
 	} catch (db_error) {
 		if (db_error instanceof ConstraintError) {
