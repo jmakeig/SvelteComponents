@@ -14,8 +14,10 @@ import {
 	validate_workload,
 	validate_workload_snapshot
 } from '$lib/entities';
-import { query, ConstraintError, revive_happened_at } from './db';
+import { create_connection, ConstraintError, revive_happened_at } from './db';
 import ufuzzy from '@leeoniya/ufuzzy';
+
+const db = create_connection();
 
 export const NOT_FOUND = 'not_found';
 
@@ -78,7 +80,7 @@ async function insert_event(pending: Event): Promise<Event> {
 	if (pending.event) {
 		throw new ConstraintError('Cannot set id when creating a new event');
 	}
-	const result = await query<{ event: Event }>(
+	const result = await db.query<{ event: Event }>(
 		`WITH inserted AS (
 		   INSERT INTO events (outcome, happened_at, customer, workload, workload_size, workload_stage)
 		   VALUES ($1, $2, $3, $4, $5, $6)
@@ -111,7 +113,7 @@ async function insert_event(pending: Event): Promise<Event> {
  * @returns A collection of `Event` instances or an empty `Array`
  */
 export async function list_events(): Promise<Array<Event>> {
-	const result = await query<{ events: Array<Event> }>(
+	const result = await db.readonly<{ events: Array<Event> }>(
 		`SELECT COALESCE(jsonb_agg(payload ORDER BY happened_at DESC, recorded_at DESC), '[]'::jsonb) AS events
 		 FROM (
 		   SELECT e.happened_at, e.recorded_at, ${EVENT_SHAPE_SQL} AS payload
@@ -125,7 +127,7 @@ export async function list_events(): Promise<Array<Event>> {
 }
 
 export async function get_event(id: ID): Promise<Event | null> {
-	const result = await query<{ event: Event }>(
+	const result = await db.readonly<{ event: Event }>(
 		`SELECT ${EVENT_SHAPE_SQL} AS event
 		 FROM events e
 		 LEFT JOIN customers c ON c.customer = e.customer
@@ -159,7 +161,7 @@ export async function update_event(pending: unknown): Promise<Validated<Event>> 
 	}
 	const event = result.data;
 	try {
-		const updated = await query<{ event: Event }>(
+		const updated = await db.query<{ event: Event }>(
 			`WITH updated AS (
 			   UPDATE events SET outcome = $2, happened_at = $3, customer = $4, workload = $5,
 			          workload_size = $6, workload_stage = $7
@@ -201,7 +203,7 @@ export async function update_event(pending: unknown): Promise<Validated<Event>> 
 }
 
 export async function delete_event(id: ID): Promise<Validation<void> | undefined> {
-	const result = await query<{ event: Event }>(
+	const result = await db.query<{ event: Event }>(
 		`WITH deleted AS (
 		   DELETE FROM events WHERE event = $1
 		   RETURNING event, outcome, happened_at, customer, workload, workload_size, workload_stage,
@@ -227,7 +229,7 @@ export async function delete_event(id: ID): Promise<Validation<void> | undefined
  * a `<select>`.
  */
 export async function list_segments(): Promise<Array<Segment>> {
-	const result = await query<{ segments: Array<Segment> }>(
+	const result = await db.readonly<{ segments: Array<Segment> }>(
 		`SELECT COALESCE(jsonb_agg(jsonb_build_object('name', name, 'value', segment) ORDER BY ordinal), '[]'::jsonb) AS segments
 		 FROM segments`
 	);
@@ -240,7 +242,7 @@ export async function list_segments(): Promise<Array<Segment>> {
  * @returns A collection of `Customer` instances or an empty `Array`
  */
 export async function list_customers(): Promise<Array<Customer>> {
-	const result = await query<{ customers: Array<Customer> }>(
+	const result = await db.readonly<{ customers: Array<Customer> }>(
 		`SELECT COALESCE(jsonb_agg(
 		   jsonb_build_object('customer', customer, 'label', label, 'name', name, 'segment', segment)
 		   ORDER BY name
@@ -253,12 +255,12 @@ export async function list_customers(): Promise<Array<Customer>> {
 export async function get_customer(lookup: Lookup): Promise<Customer | null> {
 	const result =
 		'id' in lookup
-			? await query<{ customer: Customer }>(
+			? await db.readonly<{ customer: Customer }>(
 					`SELECT jsonb_build_object('customer', customer, 'label', label, 'name', name, 'segment', segment) AS customer
 					 FROM customers WHERE customer = $1`,
 					[lookup.id]
 				)
-			: await query<{ customer: Customer }>(
+			: await db.readonly<{ customer: Customer }>(
 					`SELECT jsonb_build_object('customer', customer, 'label', label, 'name', name, 'segment', segment) AS customer
 					 FROM customers WHERE label = $1`,
 					[lookup.label]
@@ -279,7 +281,7 @@ export async function create_customer(pending: unknown): Promise<Validated<Custo
 		if (customer.customer) {
 			throw new ConstraintError('Cannot set id when creating a new customer');
 		}
-		const inserted = await query<{ customer: Customer }>(
+		const inserted = await db.query<{ customer: Customer }>(
 			`INSERT INTO customers (label, name, segment) VALUES ($1, $2, $3)
 			 RETURNING jsonb_build_object('customer', customer, 'label', label, 'name', name, 'segment', segment) AS customer`,
 			[customer.label, customer.name, customer.segment]
@@ -301,7 +303,7 @@ export async function update_customer(pending: unknown): Promise<Validated<Custo
 	}
 	const customer = result.data;
 	try {
-		const updated = await query<{ customer: Customer }>(
+		const updated = await db.query<{ customer: Customer }>(
 			`UPDATE customers SET label = $2, name = $3, segment = $4 WHERE customer = $1
 			 RETURNING jsonb_build_object('customer', customer, 'label', label, 'name', name, 'segment', segment) AS customer`,
 			[customer.customer, customer.label, customer.name, customer.segment]
@@ -324,7 +326,7 @@ export async function update_customer(pending: unknown): Promise<Validated<Custo
 
 export async function delete_customer(id: ID): Promise<Validation<void> | undefined> {
 	try {
-		const result = await query<{ customer: Customer }>(
+		const result = await db.query<{ customer: Customer }>(
 			`DELETE FROM customers WHERE customer = $1
 			 RETURNING jsonb_build_object('customer', customer, 'label', label, 'name', name, 'segment', segment) AS customer`,
 			[id]
@@ -348,7 +350,7 @@ export async function delete_customer(id: ID): Promise<Validation<void> | undefi
  * a `<select>` — same role as `list_segments`.
  */
 export async function list_stages(): Promise<Array<Stage>> {
-	const result = await query<{ stages: Array<Stage> }>(
+	const result = await db.readonly<{ stages: Array<Stage> }>(
 		`SELECT COALESCE(jsonb_agg(jsonb_build_object('name', name, 'value', stage) ORDER BY stage), '[]'::jsonb) AS stages
 		 FROM stages`
 	);
@@ -361,7 +363,7 @@ export async function list_stages(): Promise<Array<Stage>> {
  * @returns A collection of `Workload` instances or an empty `Array`
  */
 export async function list_workloads(): Promise<Array<Workload>> {
-	const result = await query<{ workloads: Array<Workload> }>(
+	const result = await db.readonly<{ workloads: Array<Workload> }>(
 		`SELECT COALESCE(jsonb_agg(${WORKLOAD_SHAPE_SQL} ORDER BY w.name), '[]'::jsonb) AS workloads
 		 FROM workloads w
 		 JOIN customers c ON c.customer = w.customer
@@ -373,7 +375,7 @@ export async function list_workloads(): Promise<Array<Workload>> {
 export async function get_workload(lookup: Lookup): Promise<Workload | null> {
 	const result =
 		'id' in lookup
-			? await query<{ workload: Workload }>(
+			? await db.readonly<{ workload: Workload }>(
 					`SELECT ${WORKLOAD_SHAPE_SQL} AS workload
 					 FROM workloads w
 					 JOIN customers c ON c.customer = w.customer
@@ -381,7 +383,7 @@ export async function get_workload(lookup: Lookup): Promise<Workload | null> {
 					 WHERE w.workload = $1`,
 					[lookup.id]
 				)
-			: await query<{ workload: Workload }>(
+			: await db.readonly<{ workload: Workload }>(
 					`SELECT ${WORKLOAD_SHAPE_SQL} AS workload
 					 FROM workloads w
 					 JOIN customers c ON c.customer = w.customer
@@ -414,7 +416,7 @@ export async function create_workload(pending: unknown): Promise<Validated<Workl
 		if (new_workload.workload) {
 			throw new ConstraintError('Cannot set id when creating a new workload');
 		}
-		const inserted = await query<{ workload: Workload }>(
+		const inserted = await db.query<{ workload: Workload }>(
 			`WITH inserted AS (
 			   INSERT INTO workloads_base (label, name, customer) VALUES ($1, $2, $3)
 			   RETURNING workload, label, name, customer
@@ -465,7 +467,7 @@ export async function update_workload(pending: unknown): Promise<Validated<Workl
 	}
 	const patch = result.data;
 	try {
-		const updated = await query<{ workload: Workload }>(
+		const updated = await db.query<{ workload: Workload }>(
 			`WITH updated AS (
 			   UPDATE workloads_base SET label = $2, name = $3, customer = $4 WHERE workload = $1
 			   RETURNING workload
@@ -495,7 +497,7 @@ export async function update_workload(pending: unknown): Promise<Validated<Workl
 
 export async function delete_workload(id: ID): Promise<Validation<void> | undefined> {
 	try {
-		const result = await query<{ workload: Workload }>(
+		const result = await db.query<{ workload: Workload }>(
 			`DELETE FROM workloads_base WHERE workload = $1
 			 RETURNING jsonb_build_object('workload', workload, 'label', label, 'name', name) AS workload`,
 			[id]
@@ -521,7 +523,7 @@ export async function delete_workload(id: ID): Promise<Validation<void> | undefi
  * a `WorkloadEvent`, never written directly.
  */
 export async function list_workload_history(id: ID): Promise<Array<WorkloadHistoryEntry>> {
-	const result = await query<{ history: Array<WorkloadHistoryEntry> }>(
+	const result = await db.readonly<{ history: Array<WorkloadHistoryEntry> }>(
 		`SELECT COALESCE(jsonb_agg(
 		   jsonb_build_object('event', e.event, 'happened_at', e.happened_at)
 		   || CASE WHEN e.workload_size IS NOT NULL
@@ -541,7 +543,7 @@ export async function list_workload_history(id: ID): Promise<Array<WorkloadHisto
 
 /** Customer-only search, for picking the `customer` a `Workload` belongs to — no type ambiguity to encode, unlike `match_customer_workload`. */
 export async function match_customer(input: string) {
-	const result = await query<{ customer: ID; label: string; name: string }>(
+	const result = await db.readonly<{ customer: ID; label: string; name: string }>(
 		'SELECT customer, label, name FROM customers'
 	);
 	const matches = _search(result.rows, input);
@@ -555,10 +557,10 @@ export async function match_customer(input: string) {
 export async function match_customer_workload(input: string) {
 	// Candidates fetched from Postgres; the actual typo-tolerant matching still runs in
 	// Node via `_search()`.
-	const customers_result = await query<{ customer: ID; label: string; name: string }>(
+	const customers_result = await db.readonly<{ customer: ID; label: string; name: string }>(
 		'SELECT customer, label, name FROM customers'
 	);
-	const workloads_result = await query<{
+	const workloads_result = await db.readonly<{
 		workload: ID;
 		label: string;
 		name: string;
