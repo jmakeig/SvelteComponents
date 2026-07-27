@@ -14,12 +14,22 @@ import {
 	validate_workload,
 	validate_workload_snapshot
 } from '$lib/entities';
-import { create_connection, ConstraintError, revive_happened_at, type Queryable } from './db';
+import { create_connection, ConstraintError, type Queryable } from './db';
+import { parse_timestamp } from '$lib/datetime';
 import ufuzzy from '@leeoniya/ufuzzy';
 
 const db = create_connection();
 
 export const NOT_FOUND = 'not_found';
+
+/**
+ * Postgres serializes `TIMESTAMPTZ` inside jsonb as an ISO string with an explicit offset (e.g.
+ * `"2026-07-10T19:14:00+00:00"`), which `parse_timestamp` resolves unambiguously — reuse it here
+ * so a read's shape matches a write's.
+ */
+function revive_happened_at<T extends { happened_at: unknown }>(row: T): T {
+	return { ...row, happened_at: parse_timestamp(row.happened_at as string) };
+}
 
 /** Look up an entity by its true id or by its (mutable) label — exactly one, not both. */
 type Lookup = { id: ID; label?: never } | { label: string; id?: never };

@@ -10,6 +10,10 @@ declare global {
 			message: string;
 			original?: SerializableError;
 		}
+		interface Locals {
+			timezone: string;
+			locale: string[];
+		}
 	}
 }
 export {};

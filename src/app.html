@@ -2,6 +2,12 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
+		<script>
+			document.cookie =
+				'timezone=' +
+				Intl.DateTimeFormat().resolvedOptions().timeZone +
+				'; path=/; max-age=34560000; samesite=lax';
+		</script>
 		<link rel="icon" type="image/svg+xml" href="%sveltekit.assets%/pipeline.svg" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<style>

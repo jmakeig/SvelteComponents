@@ -1,4 +1,5 @@
 import { Validation, type Validated } from '$components/FormControl/validation';
+import { parse_timestamp } from '$lib/datetime';
 
 /** Optional properties are always represented as explicit `null`, not `undefined` or missing. */
 type Optional<T> = T | null;
@@ -118,21 +119,6 @@ export type WorkloadHistoryEntry = {
 	size?: Optional<number>;
 	stage?: Optional<Stage>;
 };
-
-/**
- * Parses a full ISO 8601 timestamp that carries an explicit UTC offset (e.g.
- * `2025-02-01T13:14-06:00`, as produced by `DateTimeLocal`'s `iso` on submit, or
- * `2025-02-01T19:14:00+00:00`, as `TIMESTAMPTZ` serializes inside `jsonb` on read) into a `Date`.
- * Unlike a bare date, an explicit offset means `new Date` already resolves this unambiguously —
- * no separate local-vs-UTC reconstruction needed.
- *
- * @param iso_timestamp
- * @returns `Date` or `new Date(NaN)` for invalid input
- */
-export function parse_timestamp(iso_timestamp: string | null): Date {
-	if (null === iso_timestamp) return new Date(NaN);
-	return new Date(iso_timestamp);
-}
 
 /**
  * Human-readable and URL-friendly transformation of a `name`, e.g. for `Entity.label`.

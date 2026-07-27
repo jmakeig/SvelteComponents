@@ -1,5 +1,13 @@
 import { dev } from '$app/environment';
-import type { HandleServerError } from '@sveltejs/kit';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
+import { is_valid_timezone, parse_accept_language } from '$lib/datetime';
+
+export const handle: Handle = ({ event, resolve }) => {
+	const timezone = event.cookies.get('timezone');
+	event.locals.timezone = timezone && is_valid_timezone(timezone) ? timezone : 'UTC';
+	event.locals.locale = parse_accept_language(event.request.headers.get('accept-language'));
+	return resolve(event);
+};
 
 export const handleError: HandleServerError = ({ error, event }) => {
 	const e = error as Error;

@@ -7,8 +7,6 @@ import {
 	POSTGRES_DB
 } from '$env/static/private';
 
-import { parse_timestamp } from '$lib/entities';
-
 /** Common shape of `create_connection()`'s own `query` and a `pg.PoolClient` handed to a
  *  `transaction` runner — lets a helper like `insert_event` run either standalone (against the
  *  pool) or as one statement inside a caller's transaction, without caring which. */
@@ -112,13 +110,4 @@ function wrap_error(err: unknown): unknown {
 		}
 	}
 	return err;
-}
-
-/**
- * Postgres serializes `TIMESTAMPTZ` inside jsonb as an ISO string with an explicit offset (e.g.
- * `"2026-07-10T19:14:00+00:00"`), which `parse_timestamp` (used everywhere else in the app for
- * `happened_at`) resolves unambiguously — reuse it here so a read's shape matches a write's.
- */
-export function revive_happened_at<T extends { happened_at: unknown }>(row: T): T {
-	return { ...row, happened_at: parse_timestamp(row.happened_at as string) };
 }

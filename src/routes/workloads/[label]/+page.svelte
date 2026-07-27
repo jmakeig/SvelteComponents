@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import { format_local } from '$lib/datetime';
 
 	let { data }: PageProps = $props();
 </script>
@@ -15,7 +16,7 @@
 <ul>
 	{#each data.history as entry}
 		<li>
-			<a href="/events/{entry.event}">{entry.happened_at.toISOString()}</a>
+			<a href="/events/{entry.event}">{format_local(entry.happened_at, data.timezone, data.locale)}</a>
 			{#if 'size' in entry}<span>size: {entry.size ?? '—'}</span>{/if}
 			{#if 'stage' in entry}<span>stage: {entry.stage?.name ?? '—'}</span>{/if}
 		</li>

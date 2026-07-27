@@ -50,9 +50,10 @@
 		data: Event;
 		form?: Validated<Event> | null; // ActionData
 		stages: Stage[];
+		timezone: string;
 	}
 
-	const { action = 'edit', data, form, stages }: Props = $props();
+	const { action = 'edit', data, form, stages, timezone }: Props = $props();
 	/** Either a validated `Event` or the raw (possibly invalid) submission being redisplayed — read fields off it with a local cast, not a modeled shape. */
 	const event = $derived((form?.data ?? data) as Record<string, unknown> | undefined);
 
@@ -71,13 +72,14 @@
 	type Loosey<T> = T | string | null | undefined;
 
 	/** Renders a `happened_at` `Date` as the `DateTimeLocal.iso`-shaped string its own `iso`
-	 *  prop expects — in whichever timezone the current runtime's local getters report (see
-	 *  `DateTimeLocal.from`). A redisplayed failed submission is already such a string
-	 *  (`unmarshall`'s raw output), so it passes through unchanged. */
+	 *  prop expects, in `timezone` (see `DateTimeLocal.from`) — the component derives its own
+	 *  offset from `timezone`, so only the datetime portion needs producing here. A redisplayed
+	 *  failed submission is already such a string (`unmarshall`'s raw output), so it passes
+	 *  through unchanged. */
 	function to_iso_datetime(value: Loosey<Date>): Loosey<string> {
 		if (value instanceof Date) {
 			if (isNaN(value.getTime())) return null;
-			return DateTimeLocal.from(value) + DateTimeLocal.offset_local();
+			return DateTimeLocal.from(value, timezone);
 		}
 		return value;
 	}
@@ -151,7 +153,7 @@
 		validation={form?.validation}
 	>
 		{#snippet input({ name, id, value })}
-			<DateTimeLocalInput {name} id={id as string | undefined} iso={value as string} />
+			<DateTimeLocalInput {name} id={id as string | undefined} iso={value as string} {timezone} />
 		{/snippet}
 	</FormControl>
 	{#if 'workload' === selected_kind}
