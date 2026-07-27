@@ -42,10 +42,11 @@ CREATE TABLE workloads_base (
 	customer UUID NOT NULL REFERENCES customers (customer)
 );
 
--- `happened_at` is a user-picked local date (see `parse_date_local` in entities.ts),
--- not a timestamp, so same-day entries are routine. `recorded_at` exists purely to
--- break those ties by recording order, mirroring the array-insertion-order tie-break
--- `recompute_workload_snapshot` used in the in-memory implementation. Defaults to
+-- `happened_at` is a user-picked date-time, carrying whatever UTC offset the browser reported
+-- (see `DateTimeLocal` and `parse_timestamp` in entities.ts) — same-instant entries are still
+-- possible (two events logged for the same minute, or bulk-imported history). `recorded_at`
+-- exists purely to break those ties by recording order, mirroring the array-insertion-order
+-- tie-break `recompute_workload_snapshot` used in the in-memory implementation. Defaults to
 -- `clock_timestamp()`, not `now()` — `now()` is frozen for the whole transaction,
 -- so multiple events inserted together would otherwise tie exactly.
 --
@@ -57,7 +58,7 @@ CREATE TABLE workloads_base (
 CREATE TABLE events (
 	event UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 	outcome TEXT NOT NULL,
-	happened_at DATE NOT NULL,
+	happened_at TIMESTAMPTZ NOT NULL,
 	recorded_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
 	customer UUID REFERENCES customers (customer),
 	workload UUID REFERENCES workloads_base (workload),

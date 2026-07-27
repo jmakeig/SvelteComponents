@@ -120,25 +120,18 @@ export type WorkloadHistoryEntry = {
 };
 
 /**
- * TODO: Oof. This will be different on the client and the server because of locales.
+ * Parses a full ISO 8601 timestamp that carries an explicit UTC offset (e.g.
+ * `2025-02-01T13:14-06:00`, as produced by `DateTimeLocal`'s `iso` on submit, or
+ * `2025-02-01T19:14:00+00:00`, as `TIMESTAMPTZ` serializes inside `jsonb` on read) into a `Date`.
+ * Unlike a bare date, an explicit offset means `new Date` already resolves this unambiguously —
+ * no separate local-vs-UTC reconstruction needed.
  *
- * @param iso_date
- * @returns `Date` or `new Date(NaN)` for invalid dates
+ * @param iso_timestamp
+ * @returns `Date` or `new Date(NaN)` for invalid input
  */
-export function parse_date_local(iso_date: string | null): Date {
-	if (null === iso_date) return new Date(NaN);
-	const regex = /^\d{4}-\d{2}-\d{2}$/;
-	if (!regex.test(iso_date)) {
-		return new Date(NaN);
-	}
-	const [year, month, day] = iso_date.split('-').map((part) => parseInt(part, 10));
-	const local = new Date(year, month - 1, day);
-
-	if (isNaN(local.getTime())) {
-		return new Date(NaN);
-	}
-
-	return local;
+export function parse_timestamp(iso_timestamp: string | null): Date {
+	if (null === iso_timestamp) return new Date(NaN);
+	return new Date(iso_timestamp);
 }
 
 /**
@@ -253,7 +246,7 @@ export function validate_event(pending: unknown, is_new: boolean = false): Valid
 		if ('happened_at' in p) {
 			if (p.happened_at instanceof Date) event.happened_at = p.happened_at;
 			else if ('string' === typeof p.happened_at) {
-				const happened_at = parse_date_local(p.happened_at);
+				const happened_at = parse_timestamp(p.happened_at);
 				if (isNaN(happened_at.getTime())) {
 					validation.add('Invalid date', 'happened_at');
 				} else {

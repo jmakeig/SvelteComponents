@@ -7,7 +7,7 @@ import {
 	POSTGRES_DB
 } from '$env/static/private';
 
-import { parse_date_local } from '$lib/entities';
+import { parse_timestamp } from '$lib/entities';
 
 /** Common shape of `create_connection()`'s own `query` and a `pg.PoolClient` handed to a
  *  `transaction` runner — lets a helper like `insert_event` run either standalone (against the
@@ -115,11 +115,10 @@ function wrap_error(err: unknown): unknown {
 }
 
 /**
- * Postgres serializes `DATE` as a bare ISO string inside jsonb (e.g. `"2026-07-10"`).
- * `new Date(str)` would parse that as UTC midnight; `parse_date_local` (used everywhere else
- * in the app) constructs local midnight instead — reuse it here so a real DB round-trip can't
- * silently shift `happened_at` by a day in negative-UTC-offset zones.
+ * Postgres serializes `TIMESTAMPTZ` inside jsonb as an ISO string with an explicit offset (e.g.
+ * `"2026-07-10T19:14:00+00:00"`), which `parse_timestamp` (used everywhere else in the app for
+ * `happened_at`) resolves unambiguously — reuse it here so a read's shape matches a write's.
  */
 export function revive_happened_at<T extends { happened_at: unknown }>(row: T): T {
-	return { ...row, happened_at: parse_date_local(row.happened_at as string) };
+	return { ...row, happened_at: parse_timestamp(row.happened_at as string) };
 }

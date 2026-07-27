@@ -39,6 +39,7 @@
 	import CustomerWorkloadCombo from '$lib/components/CustomerWorkloadCombo.svelte';
 	import FormControl from '$components/FormControl/FormControl.svelte';
 	import { create_submit_enhance } from '$components/FormControl/FormControl.svelte';
+	import DateTimeLocalInput, { DateTimeLocal } from '$components/DateTimeLocal/DateTimeLocal.svelte';
 	import type { Validated } from '$components/FormControl/validation';
 
 	import { type Event, type Stage, validate_event } from '$lib/entities';
@@ -69,10 +70,14 @@
 	/** TODO: Extract later */
 	type Loosey<T> = T | string | null | undefined;
 
-	function to_iso_date(value: Loosey<Date>): Loosey<string> {
+	/** Renders a `happened_at` `Date` as the `DateTimeLocal.iso`-shaped string its own `iso`
+	 *  prop expects — in whichever timezone the current runtime's local getters report (see
+	 *  `DateTimeLocal.from`). A redisplayed failed submission is already such a string
+	 *  (`unmarshall`'s raw output), so it passes through unchanged. */
+	function to_iso_datetime(value: Loosey<Date>): Loosey<string> {
 		if (value instanceof Date) {
 			if (isNaN(value.getTime())) return null;
-			return value.toISOString().slice(0, 10);
+			return DateTimeLocal.from(value) + DateTimeLocal.offset_local();
 		}
 		return value;
 	}
@@ -142,11 +147,11 @@
 	</FormControl>
 	<FormControl
 		name="happened_at"
-		value={to_iso_date(event?.happened_at as Loosey<Date>)}
+		value={to_iso_datetime(event?.happened_at as Loosey<Date>)}
 		validation={form?.validation}
 	>
-		{#snippet input(provided)}
-			<input type="date" {...provided} />
+		{#snippet input({ name, id, value })}
+			<DateTimeLocalInput {name} id={id as string | undefined} iso={value as string} />
 		{/snippet}
 	</FormControl>
 	{#if 'workload' === selected_kind}
