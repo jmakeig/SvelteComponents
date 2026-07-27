@@ -74,10 +74,11 @@ const WORKLOAD_SHAPE_SQL = `jsonb_build_object(
 	                 ELSE jsonb_build_object('name', st.name, 'value', w.stage) END
 	 )`;
 
-/** Shared by `create_event` and `create_workload`'s implicit "Initial creation" event. `executor`
- *  defaults to the pool (`db`) but accepts a transaction's `client` instead, so the latter's
- *  insert lands in the same transaction as the workload row it's seeding — see `create_workload`. */
-async function insert_event(pending: Event, executor: Queryable = db): Promise<Event> {
+/** `insert_event` against a caller-supplied `executor` rather than always the pool (`db`), so
+ *  `create_workload` can pass its transaction's `client` instead — landing the seed event's
+ *  insert in the same transaction as the workload row it's seeding. Not exposed on `insert_event`
+ *  itself: only `create_workload` needs this, everyone else gets the pool via the wrapper below. */
+async function _insert_event(pending: Event, executor: Queryable = db): Promise<Event> {
 	// event is a generated column: the caller may never set it directly.
 	if (pending.event) {
 		throw new ConstraintError('Cannot set id when creating a new event');
@@ -104,11 +105,17 @@ async function insert_event(pending: Event, executor: Queryable = db): Promise<E
 		]
 	);
 	// 23503 (bad customer/workload/stage ref) / 23514 (XOR / null-implies-null checks) ->
-	// ConstraintError, either here (default `executor` is `db`, which wraps) or one level up
-	// in `db.transaction` (a transaction's raw `client` doesn't, so its caller's `catch` sees
-	// it there instead). No recompute call needed — the `workloads` view derives current
+	// ConstraintError, either here (`executor` is `db`, which wraps) or one level up in
+	// `db.transaction` (a transaction's raw `client` doesn't, so its caller's `catch` sees it
+	// there instead). No recompute call needed — the `workloads` view derives current
 	// size/stage live on every read.
 	return revive_happened_at(result.rows[0].event);
+}
+
+/** Shared by `create_event` for its "Initial creation" event; `create_workload` calls
+ *  `_insert_event` directly with its transaction's `client` instead — see above. */
+async function insert_event(pending: Event): Promise<Event> {
+	return _insert_event(pending);
 }
 
 /**
@@ -452,7 +459,7 @@ export async function create_workload(pending: unknown): Promise<Validated<Workl
 				seed.happened_at = new Date();
 				seed.size = snapshot.data.size;
 				seed.stage = snapshot.data.stage;
-				await insert_event(seed, client);
+				await _insert_event(seed, client);
 				// `workload` is a fresh row from the insert above, so it doesn't reflect the seed
 				// event just inserted — merge what was just written directly rather than
 				// round-tripping another query for it.
