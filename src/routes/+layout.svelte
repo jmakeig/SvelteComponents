@@ -9,8 +9,11 @@
 </nav>
 {@render children()}
 
+<footer>
+	<code>{data.locale}</code>, <code>{data.timezone}</code>
+</footer>
 <style>
-	nav {
+	nav, footer {
 		margin: 1em 0;
 	}
 </style>
